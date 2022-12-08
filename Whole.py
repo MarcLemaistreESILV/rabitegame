@@ -9,6 +9,8 @@ class Whole:
         self.height = height
         self.max_whole = 5
 
+        #random value that will never be exceed because to big
+        self.max = 100
         self.number_of_rabbit = 0
         #directly linked to the one on top
         self.has_rabbit = False

@@ -11,10 +11,10 @@ class Bush:
         self.relative_y = random.randint(0, 2*height)-height
         self.width = width
         self.height = height
-        self.max_bush = 3
+        self.max = 3
 
         #directly linked to the one on top
-        self.has_rabbit = False
+        self.number_of_rabbit = 0
         #states represents the number of rabbit in the bush
         #also usefull for the function display in MainActivity (same for rabbit, bush and whole)
         self.looking_state = 0

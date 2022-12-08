@@ -75,36 +75,33 @@ def display_grid(map_features):
             surface = list_of_object[0][object.looking_state]
             screen.blit(surface, (x,y))
 def rabbits_handling(each_rabbit, picture):
-    #calculte player moves
     #for every rabbits
     for rabbit in each_rabbit:
         #calculate new moves each rabbit
             #find new move (l,r,t,d)
-        if not rabbit.player:
-            (x,y) = rabbit.move(game_grid)
-            #deduce new posture
-        rabbit.animate()
-            #deduce new orientation
-        rabbit.orientation(x,y)
-        #calculate collision
-        rabbit.collision(game_grid)
-            #objects modifications
+        if not rabbit.player:#the player is the first so maybe improve this part 
+            rabbit.move(game_grid)
+                #deduce new posture
+            rabbit.animate()
+            #calculate collision
+            rabbit.collision(game_grid)
+                #objects modifications
 
 
-        #display rabbits
-            #futur improvments put this x and y in rabbit class (same for bush and whole)
-        x = (int)(rabbit.column*WIDTH_SQUARE+rabbit.relative_x)
-        y = (int)(rabbit.ligne*HEIGHT_SQUARE+rabbit.relative_y)
-         #8 images per color -> rabbit.color*8
-         #2 state per orientation -> rabbit orientation*2
-         #and then the state +rabbit.posture
-         #o = orange / b = blue
-         #l =left / r=right / u = up / d= down
-         #example: [olu,old,oru,ord,ouu,oud,odu,odd, 
-         #          blu,bld,bru,brd,buu,bud,bdu,bdd
-         #          ...]
-        surface = picture[rabbit.color*8+rabbit.orientation*2+rabbit.posture]
-        screen.blit(surface, (x,y))
+            #display rabbits
+                #futur improvments put this x and y in rabbit class (same for bush and whole)
+            x = (int)(rabbit.column*WIDTH_SQUARE+rabbit.relative_x)
+            y = (int)(rabbit.ligne*HEIGHT_SQUARE+rabbit.relative_y)
+            #8 images per color -> rabbit.color*8
+            #2 state per orientation -> rabbit orientation*2
+            #and then the state +rabbit.posture
+            #o = orange / b = blue
+            #l =left / r=right / u = up / d= down
+            #example: [olu,old,oru,ord,ouu,oud,odu,odd, 
+            #          blu,bld,bru,brd,buu,bud,bdu,bdd
+            #          ...]
+            surface = picture[rabbit.color*8+rabbit.orientation*2+rabbit.posture]
+            screen.blit(surface, (x,y))
 
 #for futur imporvments, create a function that creates many rabbit with infinit composition of colors
 #def rabbit_collusion()
@@ -196,15 +193,18 @@ for the rabbits interaction we only look and see if the center of their image is
 #UPS:
 
 running = True
-pygame.time.set_timer(rabbits_handling(each_rabbit), 200)
+pygame.time.set_timer(rabbits_handling(each_rabbit, rabbit_picture), 200)
 while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            each_rabbit[0].move(event.key, LIGNE, COLUMN)
-
+            each_rabbit[0].actions(event.key)
+    for rabbit in each_rabbit:
+        rabbit.reaction()
+    for eagle in each_eagle:
+        eagle.move()
     #rabbits do their one display at each move
     
     clock.tick(100)
