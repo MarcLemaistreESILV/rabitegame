@@ -1,6 +1,6 @@
 import random
 class Whole:
-    each_whole = []
+    each_whole =  []
     def __init__(self, column, ligne, width, height):
         self.ligne = ligne#y
         self.column = column#x

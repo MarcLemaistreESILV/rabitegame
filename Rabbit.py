@@ -6,16 +6,15 @@ import Whole
 
 class Rabbit:         
     each_rabbit = []
-    availible_hides = [Whole.each_whole, Bush.each_bush]
     COLUMN = 0
     LIGNE = 0
-    def __init__(self, column, ligne, width, height, fastness_mother=10, color = 0):
+    def __init__(self, column, ligne, width, height, fastness_mother=10, color = 1):
         #for futur improvments create gens for:
         #color, fastness, sensibility, alerting capabilities, number of child
         #feature
         self.width = width
         self.height = height
-        self.orientation = 0
+        self.orientation = 0#(up,down,left, right, hide)=(0,1,2,3,4)
         self.posture = 0
         
         #positionnal
@@ -45,7 +44,7 @@ class Rabbit:
         #check if any rabbit is avaible and love with the one he can
         for rabbit in self.each_rabbit:
             if rabbit != self:
-                if rabbit.column == self.column & rabbit.ligne == self.ligne:
+                if rabbit.column == self.column and rabbit.ligne == self.ligne:
                     self.each_rabbit.append(Rabbit(self.column, self.ligne, self.width, self.height, rabbit.fastness, rabbit.color))
                     break
     #----------------------alerting & hiding
@@ -88,13 +87,14 @@ class Rabbit:
     #----------------------end of alerting and hiding
     def new_eagle(self):
         if random.randint(0, 10) > 9:
-            Eagle()
+            Eagle(self.COLUMN, self.LIGNE)
     def new_target(self):
         #find new target or new hide or hide
         #maybefutur improvment find if there is the place befor going?
         if self.alert == True :
             #find closest hide
             final_hide = []
+            availible_hides = [Whole.each_whole, Bush.each_bush]
             for hides in self.availible_hides:
                 final_hide.append(self.closest_object(hides))
             final_object = min(final_hide)[1]
@@ -111,9 +111,9 @@ class Rabbit:
             distance = abs(object.column-self.column)+abs(object.ligne-self.ligne)
             #if equals to 0 it meens he is on the hide
             #so if he is on a hide but he can't hide, the hide is full
-            if distance == 0 & self.can_hide():
+            if distance == 0 and self.can_hide():
                 self.hide(object)
-            elif total_distance > distance & distance != 0:
+            elif total_distance > distance and distance != 0:
                 total_distance = distance
                 total_object = object
         return [total_distance, total_object]
@@ -129,9 +129,9 @@ class Rabbit:
     def direction_column(self):
         if self.column < self.target_column:
         #we are already certain the rabbit won't leave the screen for too lang
-            self.move([False, False, False, True], self.target_column+2, self.target_ligne+2)
+            self.move([False, False, False, True])
         elif self.column > self.target_column:
-            self.move([False, False, True, False], self.target_column+2, self.target_ligne+2)
+            self.move([False, False, True, False])
         elif self.ligne != self.target_ligne:
             self.direction_ligne()
         else:
@@ -140,9 +140,9 @@ class Rabbit:
     def direction_ligne(self):
         if self.ligne < self.target_ligne:
         #we are already certain the rabbit won't leave the screen for too lang
-            self.move([True, False, False, False], self.target_column+2, self.target_ligne+2)
+            self.move([True, False, False, False])
         elif self.ligne > self.target_ligne:
-            self.move([False,True, False, False], self.target_column+2, self.target_ligne+2)
+            self.move([False,True, False, False])
         elif self.column != self.target_column:
             self.direction_column()
         else:
@@ -150,19 +150,18 @@ class Rabbit:
             print("error")
     #---------------------end of direction block
     def move(self, direction):
-
         #input any rabbit (even the player) with a table giving its position [true, false, false,false]
         #finds the new picture and the new position
         #enter the move section
         if direction[0]:
             print("up")
-            if(self.relative_x -1 < 0):
+            if self.relative_y -1 < 0:
                 if self.ligne>0:
                     self.relative_y = self.height
                     self.ligne = self.ligne-1
             else:
                 self.relative_y = self.relative_y-1
-            self.looking_state = 4
+            self.orientation = 0
         elif direction[1]:
             print("down")
             if self.relative_y+1 > self.height:
@@ -171,7 +170,7 @@ class Rabbit:
                     self.ligne = self.ligne+1
             else:
                 self.relative_y = self.relative_y+1
-            self.looking_state = 5
+            self.orientation = 1
         elif direction[2]:
             print("left")
             if self.relative_x-1 < 0:
@@ -180,7 +179,7 @@ class Rabbit:
                     self.column = self.column-1
             else:
                 self.relative_x = self.relative_x-1
-            self.looking_state = 1
+            self.orientation = 2
         elif direction[3]:
             print("right")
             if self.relative_x+1 > self.width:
@@ -189,18 +188,18 @@ class Rabbit:
                     self.column = self.column+1
             else:
                 self.relative_x = self.relative_x+1
-            self.looking_state == 1 
+            self.orientation = 3
     def reactions(self):
         #else he is alerted and hidden so we have nothing to do
-        if self.hidden == True & self.alerted > 2000:
+        if self.hidden == True and self.alerted > 2000:
             self.unhide()
         elif self.hidden == False:
-            if self.column == self.target_column & self.ligne == self.target_ligne:
+            if self.column == self.target_column and self.ligne == self.target_ligne:
                 self.new_eagle()
                 self.new_target()
             else:
                 self.direction()
-    def actions(self, keys):
+    def actions(self):
         #input the player and the key array
         #calls the functions for the right action
         keys = pygame.key.get_pressed()

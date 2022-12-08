@@ -1,6 +1,5 @@
 import random
 import pygame
-import MainActivity as main
 class Eagle:         
 #there are three possibilities in my minde
 #first the screen is hidden by the eagle and rabbits disappear
@@ -9,7 +8,7 @@ class Eagle:
 #fourth eagle moves at its own rapidity (futur improvments)
 #let's take the third (for improvments secound is much more fun)
     each_eagle = []
-    def __init__(self):
+    def __init__(self, COLUMN, LIGNE):
         self.relative_x =0
         self.relative_y =0
         self.column = 0
@@ -17,11 +16,11 @@ class Eagle:
         self.target_column = 0
         self.target_ligne = 0
 
-        self.new_target(main.COLUMN, main.LIGNE)
+        self.new_target(COLUMN, LIGNE)
         self.ligne_increment= (abs(self.ligne-self.target_ligne)/(self.ligne-self.target_ligne))
         self.column_increment = (abs(self.column-self.target_column)/(self.column-self.target_column))
 
-        main.each_eagle.append(self)
+        self.each_eagle.append(self)
     
     def new_target(self, columns, lignes):
         starting_border = random.randint(0,4)
@@ -50,32 +49,29 @@ class Eagle:
         is_arrived = True
         if self.column != self.target_column:
             self.relative_x +=self.column_increment*10
-            is_arrvied = False
+            is_arrived = False
             if abs(self.width) < abs(self.relative_x):
                 self.column +=self.column_increment
                 self.relative_x=0
         if self.ligne != self.target_ligne:
             self.relative_y += self.ligne_increment*10
-            is_arrvied = False
+            is_arrived = False
             if abs(self.height) < abs(self.relative_y):
                 self.ligne +=self.ligne_increment
                 self.relative_y=0
-        if is_arrvied:
+        if is_arrived:
             self.kill_eagle()
     def kill_rabbit(self, rabbits):
+        rabbits_killed = []
         for rabbit in rabbits:
             if rabbit.column == self.column & rabbit.ligne == self.ligne:
                 if not rabbit.hidden:
-                    if rabbit.player == True:
-                        print("looser")
-                        break
-                    else:
-                        main.each_rabbit.remove(rabbit)
-                        print("rabbit was killed")
+                    rabbits_killed.append(rabbit)
+        return rabbits_killed
     def kill_eagle(self):
-        for eagle in main.each_eagle:
+        for eagle in self.each_eagle:
             if self == eagle:
-                main.each_eagle.remove(eagle)
+                self.each_eagle.remove(eagle)
                 break
     
 
