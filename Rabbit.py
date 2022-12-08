@@ -1,12 +1,14 @@
 import random
 import pygame
-import keyboard
-import eagle
+import Eagle
 import Bush
 import Whole
-import MainActivity as main
+
 class Rabbit:         
-    
+    each_rabbit = []
+    availible_hides = [Whole.each_whole, Bush.each_bush]
+    COLUMN = 0
+    LIGNE = 0
     def __init__(self, column, ligne, width, height, fastness_mother=10, color = 0):
         #for futur improvments create gens for:
         #color, fastness, sensibility, alerting capabilities, number of child
@@ -41,21 +43,21 @@ class Rabbit:
       
     def love(self):
         #check if any rabbit is avaible and love with the one he can
-        for rabbit in main.each_rabbit:
+        for rabbit in self.each_rabbit:
             if rabbit != self:
                 if rabbit.column == self.column & rabbit.ligne == self.ligne:
-                    main.each_rabbit.append(Rabbit(self.column, self.ligne, self.width, self.height, rabbit.fastness, rabbit.color))
+                    self.each_rabbit.append(Rabbit(self.column, self.ligne, self.width, self.height, rabbit.fastness, rabbit.color))
                     break
     #----------------------alerting & hiding
     def alerts(self): 
         #alerts every rabbits around it    
         #check rabbits around
-        for rabbit in main.each_rabbit:
+        for rabbit in self.each_rabbit:
             if not rabbit.alert:
                 if abs(rabbit.column-self.column) < self.alerting_capabilities:
                     rabbit.alerted()
         #check if sees an eagle
-        if random.randint(0, (int)(self.sensibility/len(main.each_eagle))) > 20:
+        if random.randint(0, (int)(self.sensibility/len(Eagle.each_eagle))) > 20:
             self.alerted()
     def alerted(rabbit):
         #alerts a rabbit
@@ -72,11 +74,11 @@ class Rabbit:
         self.orientation = 4
         match object.__name__:
             case "Bush":
-                self.relative_x = random.randint(0, main.WIDTH_BUSH)
-                self.relative_y = random.randint(0, main.HEIGHT_BUSH)
+                self.relative_x = random.randint(0, Bush.WIDTH_BUSH)
+                self.relative_y = random.randint(0, Bush.HEIGHT_BUSH)
             case "Whole":
-                self.relative_x = random.randint(0, main.WIDTH_WHOLE)
-                self.relative_y = random.randint(0, main.HEIGHT_WHOLE)   
+                self.relative_x = random.randint(0, Whole.WIDTH_WHOLE)
+                self.relative_y = random.randint(0, Whole.HEIGHT_WHOLE)   
     def can_hide(object):
         #find if it can hide
         if object.number_of_rabbit < object.max_rabbit:
@@ -86,33 +88,35 @@ class Rabbit:
     #----------------------end of alerting and hiding
     def new_eagle(self):
         if random.randint(0, 10) > 9:
-            eagle()
+            Eagle()
     def new_target(self):
         #find new target or new hide or hide
         #maybefutur improvment find if there is the place befor going?
         if self.alert == True :
-            #find new hide
-            total_distance = 100
-            temp_hid = main.map_features[0][1][0]
             #find closest hide
-            #futur improvment maybe reading the map is fastier?
-            for list in main.map_features:
-                for hide in list:
-                    distance = abs(hide.column-self.column)+abs(hide.ligne-self.ligne)
-                    #if equals to 0 it meens he is on the hide
-                    #so if he is on a hide but he can't hide, the hide is full
-                    if distance == 0 & self.can_hide():
-                        self.hide(hide)
-                    elif total_distance > distance & distance != 0:
-                        total_distance = distance
-                        temp_hid = hide
-            self.target_column = temp_hid.column
-            self.target_ligne = temp_hid.ligne
+            final_hide = []
+            for hides in self.availible_hides:
+                final_hide.append(self.closest_object(hides))
+            final_object = min(final_hide)[1]
+            self.target_column = final_object.column
+            self.target_ligne = final_object.ligne
         else:
             #set target
-            self.target_column = random.randint(0, main.COLUMN) 
-            self.target_ligne = random.randint(0, main.LIGNE)
-
+            self.target_column = random.randint(0, self.COLUMN) 
+            self.target_ligne = random.randint(0, self.LIGNE)
+    def closest_object(self, object):
+        total_distance = 100
+        total_object = None
+        for object  in object.each_bush:
+            distance = abs(object.column-self.column)+abs(object.ligne-self.ligne)
+            #if equals to 0 it meens he is on the hide
+            #so if he is on a hide but he can't hide, the hide is full
+            if distance == 0 & self.can_hide():
+                self.hide(object)
+            elif total_distance > distance & distance != 0:
+                total_distance = distance
+                total_object = object
+        return [total_distance, total_object]
     #---------------------start of direction block
     def direction(self):
         #finds the right direction and calls move_command
@@ -146,6 +150,7 @@ class Rabbit:
             print("error")
     #---------------------end of direction block
     def move(self, direction):
+
         #input any rabbit (even the player) with a table giving its position [true, false, false,false]
         #finds the new picture and the new position
         #enter the move section
@@ -161,7 +166,7 @@ class Rabbit:
         elif direction[1]:
             print("down")
             if self.relative_y+1 > self.height:
-                if self.ligne < main.LIGNE-1:
+                if self.ligne < self.LIGNE-1:
                     self.relative_y = 0
                     self.ligne = self.ligne+1
             else:
@@ -179,7 +184,7 @@ class Rabbit:
         elif direction[3]:
             print("right")
             if self.relative_x+1 > self.width:
-                if self.column < main.COLUMN-1:
+                if self.column < self.COLUMN-1:
                     self.relative_x = 0
                     self.column = self.column+1
             else:

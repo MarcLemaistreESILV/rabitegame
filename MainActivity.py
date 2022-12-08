@@ -1,7 +1,8 @@
 import random
 import pygame
-from Whole import Whole
-from Bush import Bush
+import Whole 
+import Bush
+import Eagle
 import keyboard
 """ 
 normal rabbit class, posses:
@@ -74,9 +75,9 @@ def display_grid(map_features):
             #add new designs of bushes etc.
             surface = list_of_object[0][object.looking_state]
             screen.blit(surface, (x,y))
-def rabbits_handling(each_rabbit, picture):
+def rabbits_handling(Rabbit.each_rabbit, picture):
     #for every rabbits
-    for rabbit in each_rabbit:
+    for rabbit in Rabbit.each_rabbit:
         #calculate new moves each rabbit
             #find new move (l,r,t,d)
         if not rabbit.player:#the player is the first so maybe improve this part 
@@ -129,6 +130,8 @@ LIGNE = (int)(SCREEN_SIZE_Y/HEIGHT_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 ->10
 COLUMN = (int)(SCREEN_SIZE_X/WIDTH_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 -> 10
 NUMBER_OF_BUSH = 3
 NUMBER_OF_WHOLE = 3
+Rabbit.COLUMN = COLUMN
+Rabbit.LIGNE = LIGNE
 
 #Display screen
 screen = pygame.display.set_mode((SCREEN_SIZE_X,SCREEN_SIZE_Y))
@@ -150,24 +153,24 @@ for i in range(0, LIGNE+1):
 #we initialize going form the most to the less restricted feature
 rabbit_picture_files_names=['left.png', 'right.png', 'up.png', 'down.png']
 rabbit_picture= load_images(WIDTH_RABBIT, HEIGHT_RABBIT, "rabbit/", rabbit_picture_files_names, ["blue/", "orange/"], ["up/", "down/"])
-each_rabbit = initialization(Rabbit, WIDTH_RABBIT, HEIGHT_RABBIT, 4, 11, 0,3)
+Rabbit.each_rabbit = initialization(Rabbit, WIDTH_RABBIT, HEIGHT_RABBIT, 4, 11, 0,3)
 
 #set the player special features
-each_rabbit[0].color = 1
-each_rabbit[0].ligne = 5
-each_rabbit[0].column = 5
-each_rabbit[0].player = True
+Rabbit.each_rabbit[0].color = 1
+Rabbit.each_rabbit[0].ligne = 5
+Rabbit.each_rabbit[0].column = 5
+Rabbit.each_rabbit[0].player = True
 bush_picture= load_images(WIDTH_BUSH, HEIGHT_BUSH, "bush/", ['bush_back.png', 'rabbit_head_back.png'])
-each_bush = initialization(Bush, WIDTH_BUSH, HEIGHT_BUSH, NUMBER_OF_BUSH, NUMBER_OF_BUSH, 1, 1)
+Bush.each_bush = initialization(Bush, WIDTH_BUSH, HEIGHT_BUSH, NUMBER_OF_BUSH, NUMBER_OF_BUSH, 1, 1)
 whole_picture= load_images(WIDTH_BUSH, HEIGHT_BUSH, "whole/", ['terrier_1_b.png', 'terrier_2_b.png'])
-each_whole = initialization(Whole, WIDTH_WHOLE, HEIGHT_WHOLE, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, 1, 2)
-each_eagle = []
+Whole.each_whole = initialization(Whole, WIDTH_WHOLE, HEIGHT_WHOLE, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, 1, 2)
+Eagle.each_eagle = []
 
 #store the values futur improvments:
 #make the actions in the classes
 # add rabbits to the list
 # use a dictionnary
-map_features = [[bush_picture, each_bush], [whole_picture,each_whole]]
+map_features = [[bush_picture, Bush.each_bush], [whole_picture,Whole.each_whole]]
 
 #the list has differente
 """ 
@@ -193,17 +196,17 @@ for the rabbits interaction we only look and see if the center of their image is
 #UPS:
 
 running = True
-pygame.time.set_timer(rabbits_handling(each_rabbit, rabbit_picture), 200)
+pygame.time.set_timer(rabbits_handling(Rabbit.each_rabbit, rabbit_picture), 200)
 while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            each_rabbit[0].actions(event.key)
-    for rabbit in each_rabbit:
+            Rabbit.Rabbit.each_rabbit[0].actions(event.key)
+    for rabbit in Rabbit.each_rabbit:
         rabbit.reaction()
-    for eagle in each_eagle:
+    for eagle in Eagle.Eagle.each_eagle:
         eagle.move()
     #rabbits do their one display at each move
     

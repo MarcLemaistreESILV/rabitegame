@@ -1,5 +1,6 @@
 import random
 class Bush:
+    each_bush = []
     def __init__(self, column, ligne, width, height):
         self.ligne = ligne #y
         self.column = column #x
