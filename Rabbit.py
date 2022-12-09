@@ -46,7 +46,7 @@ class Rabbit:
         for rabbit in self.each_rabbit:
             if rabbit != self:
                 if rabbit.column == self.column and rabbit.ligne == self.ligne:
-                    self.each_rabbit.append(Rabbit(self.column, self.ligne, self.width, self.height, rabbit.fastness, rabbit.color))
+                    self.each_rabbit.append(Rabbit(self.column, self.ligne, self.WIDTH, self.HEIGHT, rabbit.fastness, rabbit.color))
                     break
     #----------------------alerting & hiding
     def alerts(self): 
@@ -87,7 +87,7 @@ class Rabbit:
             return False
     #----------------------end of alerting and hiding
     def new_eagle(self):
-        if random.randint(0, 10) > 9:
+        if random.randint(0, 10) > 0:#0-> 9 //mofify just for debugging
             Eagle(self.COLUMN, self.LIGNE)
     def new_target(self):
         #find new target or new hide or hide
@@ -103,8 +103,8 @@ class Rabbit:
             self.target_ligne = final_object.ligne
         else:
             #set target
-            self.target_column = random.randint(0, self.COLUMN) 
-            self.target_ligne = random.randint(0, self.LIGNE)
+            self.target_column = random.randint(0, self.COLUMN-1) 
+            self.target_ligne = random.randint(0, self.LIGNE-1)
     def closest_object(self, object):
         total_distance = 100
         total_object = None
@@ -129,7 +129,7 @@ class Rabbit:
             self.direction_ligne()
     def direction_column(self):
         if self.column < self.target_column:
-        #we are already certain the rabbit won't leave the screen for too lang
+            #we are already certain the rabbit won't leave the screen for too lang
             self.move([False, False, False, True])
         elif self.column > self.target_column:
             self.move([False, False, True, False])
@@ -151,27 +151,21 @@ class Rabbit:
             print("error")
     #---------------------end of direction block
     def move(self, direction):
-        if self.player == False:
-            print(str(self.player)+"*****************************")
-            string_target = "target: c:"+str(self.target_column)+ " l:"+ str(self.target_ligne)
-            string_current = "current: c:"+str(+self.column)+ " l:"+str(self.ligne)
-            print(string_target)
-            print(string_current)
         #input any rabbit (even the player) with a table giving its position [true, false, false,false]
         #finds the new picture and the new position
         #enter the move section
         if direction[0]:#up
-            print("up")
+            #print("up")
             if self.relative_y-1 < 0:
                 if self.ligne>=0:
-                    self.relative_y = self.height
+                    self.relative_y = self.HEIGHT
                     self.ligne = self.ligne-1
             else:
                 self.relative_y = self.relative_y-1
             self.orientation = 0
         elif direction[1]:#down
-            print("down")
-            if self.relative_y+1 > self.height:
+            #print("down")
+            if self.relative_y+1 > self.HEIGHT:
                 if self.ligne < self.LIGNE:
                     self.relative_y = 0
                     self.ligne = self.ligne+1
@@ -179,17 +173,17 @@ class Rabbit:
                 self.relative_y = self.relative_y+1
             self.orientation = 1
         elif direction[2]:#left
-            print("left")
+            #print("left")
             if self.relative_x-1 < 0:
                 if self.column > 0 :
-                    self.relative_x = self.width
+                    self.relative_x = self.WIDTH
                     self.column = self.column-1
             else:
                 self.relative_x = self.relative_x-1
             self.orientation = 2
         elif direction[3]:#right
-            print("right")
-            if self.relative_x+1 > self.width:
+            #print("right")
+            if self.relative_x+1 > self.WIDTH:
                 if self.column < self.COLUMN-1:
                     self.relative_x = 0
                     self.column = self.column+1
@@ -211,16 +205,16 @@ class Rabbit:
         #calls the functions for the right action
         keys = pygame.key.get_pressed()
         if keys[pygame.K_l]:
-            print("love")
+            #print("love")
             self.love()
         elif keys[pygame.K_h]:
-            print("alert")
+            #print("alert")
             self.hide()
         elif keys[pygame.K_h]:
-            print("hide")
+            #print("hide")
             self.hide()
         elif keys[pygame.K_h]:
-            print("unhide")
+            #print("unhide")
             self.unhide()
         else:
             self.move([keys[pygame.K_w], keys[pygame.K_a], keys[pygame.K_s], keys[pygame.K_d]])

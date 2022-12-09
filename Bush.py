@@ -3,17 +3,17 @@ class Bush:
     each_bush = []
     WIDTH = 0
     HEIGHT = 0
-    def __init__(self, column, ligne, width, height):
+    def __init__(self, column, ligne):
         self.ligne = ligne #y
         self.column = column #x
         #the bush will be the only one in the square 
         #but the square is bigger than the bush 
         #so there is some grass in the square
         #these allows us images with different height and width
-        self.relative_x = random.randint(0, 2*width)-width
-        self.relative_y = random.randint(0, 2*height)-height
-        self.width = width
-        self.height = height
+        self.relative_x = random.randint(0, 2*self.WIDTH)-self.WIDTH
+        self.relative_y = random.randint(0, 2*self.HEIGHT)-self.HEIGHT
+        self.width = self.WIDTH
+        self.height = self.HEIGHT
         self.max = 3
 
         #directly linked to the one on top

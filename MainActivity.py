@@ -34,15 +34,7 @@ then run wheel on the file dowload pip install C://Users/marcl/Downloads/pygame-
 
 #--------------INITIALIZING
 def screen_init(width, height):
-    #Display screen
-    screen = pygame.display.set_mode((SCREEN_SIZE_X,SCREEN_SIZE_Y))
-
-    #Shape of screen
-    pygame.display.set_caption("The Amazing Rabite game")
-    icon = pygame.image.load('./src/images/icone.ico')
-    pygame.display.set_icon(icon)
-
-    #calculates screen dimensions
+   #calculates screen dimensions
     SCREEN_SIZE_X = width
     SCREEN_SIZE_Y = height
     AVERGAE_SCREEN_SIZE = (SCREEN_SIZE_Y+SCREEN_SIZE_X)/2
@@ -50,6 +42,14 @@ def screen_init(width, height):
     HEIGHT_SQUARE = (int)(AVERGAE_SCREEN_SIZE/10)
     LIGNE = (int)(SCREEN_SIZE_Y/HEIGHT_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 ->10
     COLUMN = (int)(SCREEN_SIZE_X/WIDTH_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 -> 10
+
+    #Display screen
+    screen = pygame.display.set_mode((SCREEN_SIZE_X,SCREEN_SIZE_Y))
+
+    #Shape of screen
+    pygame.display.set_caption("The Amazing Rabite game")
+    icon = pygame.image.load('./src/images/icone.ico')
+    pygame.display.set_icon(icon)
 
     #initializes and places pictures
     game_grid = []
@@ -63,13 +63,13 @@ def dimensions_init():
     Rabbit.COLUMN = COLUMN
     Rabbit.LIGNE = LIGNE
     Rabbit.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
-    Rabbit.HEIGHT (int)(AVERGAE_SCREEN_SIZE/10)
+    Rabbit.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
     Eagle.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
-    Eagle.HEIGHT (int)(AVERGAE_SCREEN_SIZE/10)
+    Eagle.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
     Bush.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
-    Bush.HEIGHT (int)(AVERGAE_SCREEN_SIZE/10)
+    Bush.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
     Whole.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
-    Whole.HEIGHT (int)(AVERGAE_SCREEN_SIZE/10)
+    Whole.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
 def initialization():
     #we initialize going form the most to the less restricted feature
     rabbit_picture_files_names=['up.png', 'down.png', 'left.png', 'right.png', 'head.png']
@@ -101,7 +101,6 @@ def load_images(width, height, folder, file_names, colors=[""], postures=[""]):
 def load_image(width, height, folder, file_name):
     path = str('./src/images/'+folder+file_name)
     return pygame.transform.scale(pygame.image.load(path), (width, height))
-
 def initialize_each(object_type, width, height, min_number, max_number, grid_refractor=0, object_type_number = 1): 
     #parameters are displayed as (who, specificly who, to make the function work)
     #for futur improvments be able to change the objectstype number so we could initialize rabbits at
@@ -115,7 +114,7 @@ def initialize_each(object_type, width, height, min_number, max_number, grid_ref
             column = random.randint(grid_refractor, COLUMN-grid_refractor)
             ligne = random.randint(grid_refractor, LIGNE-grid_refractor)
         game_grid[ligne][column] = object_type_number
-        each.append(object_type(column, ligne, width,height))
+        each.append(object_type(column, ligne))
     return each
 #------------DISPLAYING
 def display_all(rabbit_picture, bush_picture, whole_picture, eagle_picture):
@@ -169,6 +168,13 @@ def eagle_operating():
         rabbits_killed = eagle.kill_rabbit(Rabbit.each_rabbit)
     for rabbit in rabbits_killed:
         Rabbit.each_rabbit.remove(rabbit)
+        print(len(Rabbit.each_rabbit))
+    if len(Rabbit.each_rabbit) <= 1:#if only one rabbit won't be able to love
+        print("game over")
+        pygame.display.quit
+        pygame.QUIT
+        SystemExit 
+        print("end")
 def rabbit_operating():
     for rabbit in Rabbit.each_rabbit:
         if rabbit.player == False:
