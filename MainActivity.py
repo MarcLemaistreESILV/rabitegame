@@ -33,7 +33,7 @@ then run wheel on the file dowload pip install C://Users/marcl/Downloads/pygame-
 
 
 #--------------INITIALIZING
-def screen_init():
+def screen_init(width, height):
     #Display screen
     screen = pygame.display.set_mode((SCREEN_SIZE_X,SCREEN_SIZE_Y))
 
@@ -42,6 +42,15 @@ def screen_init():
     icon = pygame.image.load('./src/images/icone.ico')
     pygame.display.set_icon(icon)
 
+    #calculates screen dimensions
+    SCREEN_SIZE_X = width
+    SCREEN_SIZE_Y = height
+    AVERGAE_SCREEN_SIZE = (SCREEN_SIZE_Y+SCREEN_SIZE_X)/2
+    WIDTH_SQUARE = (int)(AVERGAE_SCREEN_SIZE/10)
+    HEIGHT_SQUARE = (int)(AVERGAE_SCREEN_SIZE/10)
+    LIGNE = (int)(SCREEN_SIZE_Y/HEIGHT_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 ->10
+    COLUMN = (int)(SCREEN_SIZE_X/WIDTH_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 -> 10
+
     #initializes and places pictures
     game_grid = []
     for i in range(0, LIGNE+1):
@@ -49,23 +58,34 @@ def screen_init():
         for j in range(0, COLUMN+1):
             line.append(7)
         game_grid.append(line)
-    return screen, game_grid
+    return screen, game_grid, SCREEN_SIZE_X ,SCREEN_SIZE_Y, AVERGAE_SCREEN_SIZE, LIGNE, COLUMN, WIDTH_SQUARE, HEIGHT_SQUARE
+def dimensions_init():
+    Rabbit.COLUMN = COLUMN
+    Rabbit.LIGNE = LIGNE
+    Rabbit.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
+    Rabbit.HEIGHT (int)(AVERGAE_SCREEN_SIZE/10)
+    Eagle.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
+    Eagle.HEIGHT (int)(AVERGAE_SCREEN_SIZE/10)
+    Bush.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
+    Bush.HEIGHT (int)(AVERGAE_SCREEN_SIZE/10)
+    Whole.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
+    Whole.HEIGHT (int)(AVERGAE_SCREEN_SIZE/10)
 def initialization():
     #we initialize going form the most to the less restricted feature
     rabbit_picture_files_names=['up.png', 'down.png', 'left.png', 'right.png', 'head.png']
-    rabbit_picture= load_images(WIDTH_RABBIT, HEIGHT_RABBIT, "rabbit/", rabbit_picture_files_names, ["blue/", "orange/"], ["up/", "down/"])
-    Rabbit.each_rabbit = initialize_each(Rabbit, WIDTH_RABBIT, HEIGHT_RABBIT, 4, 11, 0,3)
+    rabbit_picture= load_images(Rabbit.WIDTH, Rabbit.HEIGHT, "rabbit/", rabbit_picture_files_names, ["blue/", "orange/"], ["up/", "down/"])
+    Rabbit.each_rabbit = initialize_each(Rabbit, Rabbit.WIDTH, Rabbit.HEIGHT, 2, 2, 0,3)
 
     #set the player special features
     Rabbit.each_rabbit[0].color = 0
     Rabbit.each_rabbit[0].ligne = 5
     Rabbit.each_rabbit[0].column = 5
     Rabbit.each_rabbit[0].player = True
-    bush_picture= load_image(WIDTH_BUSH, HEIGHT_BUSH, "bush/", 'bush_back.png')
-    Bush.each_bush = initialize_each(Bush, WIDTH_BUSH, HEIGHT_BUSH, NUMBER_OF_BUSH, NUMBER_OF_BUSH, 1, 1)
-    whole_picture= load_image(WIDTH_BUSH, HEIGHT_BUSH, "whole/", 'terrier_1_b.png')
-    Whole.each_whole = initialize_each(Whole, WIDTH_WHOLE, HEIGHT_WHOLE, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, 1, 2)
-    eagle_picture = load_image( WIDTH_EAGLE, HEIGHT_EAGLE, "eagle/", "eagle_flying.png")
+    bush_picture= load_image(Bush.WIDTH, Bush.HEIGHT, "bush/", 'bush_back.png')
+    Bush.each_bush = initialize_each(Bush, Bush.WIDTH, Bush.HEIGHT, NUMBER_OF_BUSH, NUMBER_OF_BUSH, 1, 1)
+    whole_picture= load_image(Bush.WIDTH, Bush.HEIGHT, "whole/", 'terrier_1_b.png')
+    Whole.each_whole = initialize_each(Whole, Whole.WIDTH, Whole.HEIGHT, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, 1, 2)
+    eagle_picture = load_image( Eagle.WIDTH, Eagle.HEIGHT, "eagle/", "eagle_flying.png")
     Eagle.each_eagle = []
     return rabbit_picture, bush_picture, whole_picture, eagle_picture
 def load_images(width, height, folder, file_names, colors=[""], postures=[""]):
@@ -140,7 +160,6 @@ def display_background(x, y):
                 screen.blit(image_grass_background, (i,j))
 #---------OPERATING
 def operating():
-
     rabbit_operating()
     eagle_operating()
 def eagle_operating():
@@ -155,8 +174,6 @@ def rabbit_operating():
         if rabbit.player == False:
             rabbit.reactions()
 
-
-
 #for futur improvments, create a function that creates many rabbit with infinit composition of colors
 #def rabbit_collusion()
 #initialize
@@ -168,32 +185,11 @@ clock = pygame.time.Clock()
 every thing is divided into square, a rabbit takes a whole square (because it's the one who will be often refresh)
 a bush or a whole takes multiple squares
 """
-SCREEN_SIZE_X = 500
-SCREEN_SIZE_Y = 500
-AVERGAE_SCREEN_SIZE = (SCREEN_SIZE_Y+SCREEN_SIZE_X)/2
-
-WIDTH_RABBIT = (int)(AVERGAE_SCREEN_SIZE/10)
-HEIGHT_RABBIT = (int)(AVERGAE_SCREEN_SIZE/10)
-
-WIDTH_WHOLE = (int)(AVERGAE_SCREEN_SIZE/10)
-HEIGHT_WHOLE = (int)(AVERGAE_SCREEN_SIZE/10)
-
-WIDTH_BUSH = (int)(AVERGAE_SCREEN_SIZE/10)
-HEIGHT_BUSH = (int)(AVERGAE_SCREEN_SIZE/10)
-
-WIDTH_EAGLE = (int)(AVERGAE_SCREEN_SIZE/10)
-HEIGHT_EAGLE = (int)(AVERGAE_SCREEN_SIZE/10)
-
-WIDTH_SQUARE = WIDTH_RABBIT
-HEIGHT_SQUARE = HEIGHT_RABBIT
-LIGNE = (int)(SCREEN_SIZE_Y/HEIGHT_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 ->10
-COLUMN = (int)(SCREEN_SIZE_X/WIDTH_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 -> 10
 NUMBER_OF_BUSH = 3
 NUMBER_OF_WHOLE = 3
-Rabbit.COLUMN = COLUMN
-Rabbit.LIGNE = LIGNE
 
-(screen, game_grid) = screen_init()
+(screen, game_grid, SCREEN_SIZE_X ,SCREEN_SIZE_Y, AVERGAE_SCREEN_SIZE, LIGNE, COLUMN,  WIDTH_SQUARE, HEIGHT_SQUARE) = screen_init(500, 500)
+dimensions_init()
 (rabbit_picture, bush_picture, whole_picture, eagle_picture)= initialization()
 
 #Game Loop

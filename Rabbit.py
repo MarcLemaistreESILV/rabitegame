@@ -1,31 +1,22 @@
 import random
 import pygame
-import Eagle
-import Bush
-import Whole
+from Eagle import Eagle
+from Bush import Bush
+from Whole import Whole
 
 class Rabbit:         
     each_rabbit = []
     COLUMN = 0
     LIGNE = 0
-    def __init__(self, column, ligne, width, height, fastness_mother=10, color = 1):
+    WIDTH =0 
+    HEIGHT =0
+    def __init__(self, column, ligne, fastness_mother=10, color = 1):
         #for futur improvments create gens for:
         #color, fastness, sensibility, alerting capabilities, number of child
         #feature
-        self.width = width
-        self.height = height
         self.orientation = 0#(up,down,left, right, hide)=(0,1,2,3,4)
         self.posture = 0
         
-        #positionnal
-        self.column = column
-        self.ligne = ligne
-        self.relative_x = 0
-        self.relative_y = 0
-        #targeted point
-        self.target_column = random.randint(0, 10)#betting that the screen is more than 10 square width
-        self.target_ligne = random.randint(0, 10)#betting that the screen is more than 10 square heigh
-
         #rabbit genes
         self.fastness = fastness_mother+5-random.randint(0, 10)
         self.age = 0
@@ -35,10 +26,20 @@ class Rabbit:
 
         #for the game
         self.hide_object = None
-        self.alert = 0 
+        self.alert = False
         self.hidden = False
         self.pregnant = False   
         self.player = False
+
+        #positionnal
+        self.column = column
+        self.ligne = ligne
+        self.relative_x = 0
+        self.relative_y = 0
+        #targeted point
+        self.target_column = 0
+        self.target_ligne = 0
+        self.new_target()#has to know some of its parameters (alert)
       
     def love(self):
         #check if any rabbit is avaible and love with the one he can
@@ -138,10 +139,10 @@ class Rabbit:
             #we are arrived
             print("error")
     def direction_ligne(self):
-        if self.ligne < self.target_ligne:
+        if self.ligne > self.target_ligne:
         #we are already certain the rabbit won't leave the screen for too lang
             self.move([True, False, False, False])
-        elif self.ligne > self.target_ligne:
+        elif self.ligne < self.target_ligne:
             self.move([False,True, False, False])
         elif self.column != self.target_column:
             self.direction_column()
@@ -150,28 +151,34 @@ class Rabbit:
             print("error")
     #---------------------end of direction block
     def move(self, direction):
+        if self.player == False:
+            print(str(self.player)+"*****************************")
+            string_target = "target: c:"+str(self.target_column)+ " l:"+ str(self.target_ligne)
+            string_current = "current: c:"+str(+self.column)+ " l:"+str(self.ligne)
+            print(string_target)
+            print(string_current)
         #input any rabbit (even the player) with a table giving its position [true, false, false,false]
         #finds the new picture and the new position
         #enter the move section
-        if direction[0]:
+        if direction[0]:#up
             print("up")
-            if self.relative_y -1 < 0:
-                if self.ligne>0:
+            if self.relative_y-1 < 0:
+                if self.ligne>=0:
                     self.relative_y = self.height
                     self.ligne = self.ligne-1
             else:
                 self.relative_y = self.relative_y-1
             self.orientation = 0
-        elif direction[1]:
+        elif direction[1]:#down
             print("down")
             if self.relative_y+1 > self.height:
-                if self.ligne < self.LIGNE-1:
+                if self.ligne < self.LIGNE:
                     self.relative_y = 0
                     self.ligne = self.ligne+1
             else:
                 self.relative_y = self.relative_y+1
             self.orientation = 1
-        elif direction[2]:
+        elif direction[2]:#left
             print("left")
             if self.relative_x-1 < 0:
                 if self.column > 0 :
@@ -180,7 +187,7 @@ class Rabbit:
             else:
                 self.relative_x = self.relative_x-1
             self.orientation = 2
-        elif direction[3]:
+        elif direction[3]:#right
             print("right")
             if self.relative_x+1 > self.width:
                 if self.column < self.COLUMN-1:
@@ -208,7 +215,7 @@ class Rabbit:
             self.love()
         elif keys[pygame.K_h]:
             print("alert")
-            self.alert()
+            self.hide()
         elif keys[pygame.K_h]:
             print("hide")
             self.hide()
@@ -224,3 +231,4 @@ class Rabbit:
             self.posture = 1
         else:
             self.posture = 0
+
