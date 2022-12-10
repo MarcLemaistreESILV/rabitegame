@@ -23,5 +23,7 @@ However it is still possible. That is the reason why bushes and wholes are gener
 you see the name relative_x in the rabbit's parameters.
 Finally I want to improve on the changing color. Indeed I didn't find the lirary I was looking for. So what I want to do is changing the color of the rabbits to make the color
 also an evlotuive parameter.
+Finaly I would like to make the movments more fluid espacally the ones of the rabbits but pygame doesn't seems to be made for it.
+I also wanted to make the eagle move by direction and not targeting an absolute position, sadly I have other more interesting project in minds.
 little image to see the game while working
 ![image](https://user-images.githubusercontent.com/98088714/206866591-4dd08e4e-3d47-47ec-af71-2468dc2465b8.png)
