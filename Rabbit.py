@@ -11,7 +11,7 @@ class Rabbit:
     SCREEN_SIZE_X = 0
     SCREEN_SIZE_Y = 0
 
-    def __init__(self, x, y, fastness_mother=10, color = 1):
+    def __init__(self, x, y, fastness_mother=2, color = [100,100,240]):
         #for futur improvments create gens for:
         #color, fastness, sensibility, alerting capabilities, number of child
         #feature
@@ -19,7 +19,7 @@ class Rabbit:
         self.posture = 0
         
         #rabbit genes
-        self.fastness = fastness_mother+5-random.randint(0, 10)
+        self.fastness = (int)(fastness_mother+2-random.randint(0, 3))
         self.age = 0
         self.alerting_capabilities = 3
         self.color = color#0=orange 1=blue....
@@ -29,7 +29,7 @@ class Rabbit:
         self.hide_object = None
         self.alert = False
         self.hidden = 0#because we have a timer when he unhide
-        self.pregnant = False   
+        self.pause = 0#for love and futurs actions that maybe you'll see
         self.player = False
 
         #positionnal
@@ -45,13 +45,13 @@ class Rabbit:
         mother = self.collision_list(self.each)
         if mother != None:
             self.each.append(Rabbit(self.x, self.y, mother.fastness, mother.color))
+            self.pause +=1
     #----------------------alerting & hiding
     def alerted(rabbit):
         #alerts a rabbit
         if random.randint(0, rabbit.sensibility) < 100:#should be 2 or 3 in real game
             rabbit.alert = True
             rabbit.find_hide()
-            #print("e")
     def alerts(self): 
         #alerts every rabbits around it    
         #check rabbits around
@@ -59,9 +59,6 @@ class Rabbit:
             if not rabbit.alert:
                 if abs(rabbit.x-self.x) < self.alerting_capabilities:
                     rabbit.alerted()
-        #check if sees an eagle (sometme false alert)
-        if random.randint(0, (int)(self.sensibility/(len(Eagle.each_eagle)+1))) > 20:
-            self.alerted()
     def find_hide(self):        
         hide = self.closest_hide()
         self.x_target = hide.x
@@ -89,9 +86,10 @@ class Rabbit:
     def hide(self):
         if Rabbit.can_hide(self.hide_object):
             self.hidden = 1
+            self.hidden=True
             self.hide_object.number_of_rabbit +=1
-            self.x =  self.hide_object.x+random.randint(0, self.hide_object.WIDTH)
-            self.y =  self.hide_object.y+random.randint(0, self.hide_object.HEIGHT)
+            self.x =  self.hide_object.x+random.randint(0, self.hide_object.WIDTH-(int)(self.WIDTH/2))
+            self.y =  self.hide_object.y+random.randint(0, self.hide_object.HEIGHT-(int)(self.WIDTH/2))-5
             self.orientation = self.hide_object.orientation
         else:
             self.hide_object = None
@@ -99,12 +97,15 @@ class Rabbit:
     def unhide(self):
         #hide or unhide the rabbit, affects also the hide's object
         self.hide_object.number_of_rabbit -=1
+        self.x = self.hide_object.x
+        self.y = self.hide_object.y
         self.hide_object = None
         self.alert = False
         self.hidden = 0
+        self.new_target()
     #----------------------end of alerting and hiding
     def new_eagle(self):
-        if random.randint(0, 10) > 0:#0-> 9 //mofify just for debugging
+        if random.randint(0, 10) > 7:#0-> 9 //mofify just for debugging
             Eagle(self.x, self.y)
         self.alerted()
         if self.alert == True:
@@ -127,7 +128,7 @@ class Rabbit:
             self.move([False, False, False, True])#u,d,l,r
         elif self.x-2 > self.x_target:
             self.move([False, False, True, False])
-        elif abs(self.y - self.y_target) > 10:
+        elif abs(self.y - self.y_target) > 2:
             self.direction_y()
         else:
             self.arrived()
@@ -136,7 +137,7 @@ class Rabbit:
             self.move([False, True, False, False])
         elif self.y-2 > self.y_target:
             self.move([True, False,  False, False])
-        elif abs(self.x-self.x_target) > 10:
+        elif abs(self.x-self.x_target) > 2:
             self.direction_x()
         else:
             self.arrived()
@@ -147,12 +148,14 @@ class Rabbit:
         if self.alert == True :
             self.hide()
         else:
-            self.new_eagle()
             self.new_target()
+            self.new_eagle()
     def collision_object(self, object):
         #returns true if collision, false otherwise
-        if abs(self.x-object.x) <= 10 and abs(self.y-object.y) <= 10 and self != object:
-            return True
+        #(X+ W/4)-w < x < (X+ W/4)+ W/2
+        if object.x -(int)(self.WIDTH) < self.x and self.x < object.x + (int)(object.WIDTH):
+            if object.y - (int)(self.HEIGHT)-20< self.y and self.y < object.y + (int)(object.HEIGHT)-(int)(self.HEIGHT):
+                return True
         return False
     def collision_list(self, each):
         #returns the object collided
@@ -173,53 +176,52 @@ class Rabbit:
         #enter the move section
         if direction[0]:#up
             if self.y >= 0:
-                self.y-=2
-                #else:
-                #print("out of screen up")
+                self.y-=self.fastness
             self.orientation = 0
         elif direction[1]:#down
             if self.y <= self.SCREEN_SIZE_Y-self.HEIGHT:
-                self.y+=2
-                #else:
-                #print("out of screen down")
+                self.y+=self.fastness
             self.orientation = 1
         elif direction[2]:#left
             if self.x >=0:
-                self.x-=2
-                #else:
-                #print("out of screen left")
+                self.x-=self.fastness
             self.orientation = 2
         elif direction[3]:#right
             if self.x <= self.SCREEN_SIZE_X-self.WIDTH:
-                self.x+=2
-                #else:
-                #print("out of screen left")
+                self.x+=self.fastness
             self.orientation = 3
     def reactions(self):
-        if self.hidden == 0:
-            self.direction()
-        elif self.hidden > 40:
-            self.unhide()
-        else:
-            self.hidden+=1
+        if self.can_play():
+            if self.hidden == 0:
+                self.direction()
+            elif self.hidden > 40:
+                self.unhide()
+            else:
+                self.hidden+=1
     def actions(self):
-        #input the player and the key array
-        #calls the functions for the right action
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_l]:
-            ##print("love")
-            self.love()
-        elif keys[pygame.K_h]:
-            ##print("alert")
-            self.alerts()
-        elif keys[pygame.K_h]:
-            ##print("hide")
-            self.hide()
-        elif keys[pygame.K_h]:
-            ##print("unhide")
-            self.unhide()
-        else:
-            self.move([keys[pygame.K_w], keys[pygame.K_a], keys[pygame.K_s], keys[pygame.K_d]])
+        if self.player:
+            if self.can_play() and not self.hidden:
+                #input the player and the key array
+                #calls the functions for the right action
+                if keys[pygame.K_l]:
+                    self.love()
+                elif keys[pygame.K_i]:
+                    self.alerts()
+                elif keys[pygame.K_h]:
+                    hide = self.collision_all([Whole.each, Bush.each])
+                    self.hide_object = hide
+                    if hide != None:
+                        self.hide()
+                else:
+                    if self.hidden != True:
+                        self.move([keys[pygame.K_w], keys[pygame.K_a], keys[pygame.K_s], keys[pygame.K_d]])
+            elif keys[pygame.K_u]:
+                self.hide_object.number_of_rabbit -= 1
+                self.hide_object = None
+                self.alert = False
+                self.hidden = 0
+                self.orientation=1
     def animate(self):
         #change the number this number will be use to change the index of the picture we display
         #=>change the posture
@@ -227,4 +229,10 @@ class Rabbit:
             self.posture = 1
         else:
             self.posture = 0
-
+    def can_play(self):
+        if self.pause > 200:#put to 200
+            self.pause = 0
+        elif self.pause > 0:
+            self.pause+=1
+            return False
+        return True

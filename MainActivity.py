@@ -53,9 +53,9 @@ def dimensions_init():
     Rabbit.Y = SCREEN_SIZE_Y
     Rabbit.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
     Rabbit.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
-    Eagle.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
-    Eagle.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
-    Bush.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
+    Eagle.WIDTH = (int)(AVERGAE_SCREEN_SIZE/5)
+    Eagle.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/5)
+    Bush.WIDTH = (int)(AVERGAE_SCREEN_SIZE/5)
     Bush.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
     Whole.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
     Whole.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
@@ -64,20 +64,20 @@ def initialization():
 
     #for rabbit the width is not the same, so we have to load different sets of images
     rabbit_picture_files_names_moving=['up.png', 'down.png', 'left.png', 'right.png']
-    rabbit_picture_file_name_extras = [["head.png", 50, 50], ["invisible.png", 0,0]]
+    rabbit_picture_file_name_extras = [["head.png", 25, 40], ["invisible.png", 0,0]]
     rabbit_picture= load_images(Rabbit.WIDTH, Rabbit.HEIGHT, "rabbit/", rabbit_picture_files_names_moving, ["blue/", "orange/"], ["up/", "down/"], rabbit_picture_file_name_extras)
-    Rabbit.each = initialize_each(Rabbit, 4, 4)
+    initialize_each(Rabbit, 2, 2)
 
     #set the player special features
     Rabbit.each[0].color = 0
     Rabbit.each[0].ligne = 5
     Rabbit.each[0].column = 5
     Rabbit.each[0].player = True
-    bush_picture= load_image(Bush.WIDTH, Bush.HEIGHT, "bush/", 'bush_back.png')
-    Bush.each = initialize_each(Bush, NUMBER_OF_BUSH, NUMBER_OF_BUSH, 1)
-    whole_picture= load_image(Bush.WIDTH, Bush.HEIGHT, "whole/", 'terrier_1_b.png')
-    Whole.each = initialize_each(Whole, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, 2)
-    eagle_picture = load_image( Eagle.WIDTH, Eagle.HEIGHT, "eagle/", "eagle_flying.png")
+    bush_picture= load_image(Bush.WIDTH, Bush.HEIGHT, "bush/", 'bush.png')
+    initialize_each(Bush, NUMBER_OF_BUSH, NUMBER_OF_BUSH, Bush.WIDTH)
+    whole_picture= load_image(Whole.WIDTH, Whole.HEIGHT, "whole/", 'whole.png')
+    initialize_each(Whole, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, Whole.WIDTH)
+    eagle_picture = load_image( Eagle.WIDTH, Eagle.HEIGHT, "eagle/", "eagle.png")
     Eagle.each_eagle = []
     return rabbit_picture, bush_picture, whole_picture, eagle_picture
 def load_images(width, height, folder, file_names, colors=[""], postures=[""], extras=[""]):
@@ -101,24 +101,22 @@ def initialize_each(object_type, min_number, max_number, grid_refractor=0):
     #parameters are displayed as (who, specificly who, to make the function work)
     #for futur improvments be able to change the objectstype number so we could initialize rabbits at
     #the same place or in bushes/wholes
-    each = []
     number = random.randint(min_number, max_number)
     for i in range(number):
         x = random.randint(grid_refractor,SCREEN_SIZE_X-grid_refractor-object_type.WIDTH)
         y = random.randint(grid_refractor,SCREEN_SIZE_Y-grid_refractor)
-        while(collision(x,y)):
+        while(collision(x,y,object_type.WIDTH, object_type.HEIGHT )):
             x = random.randint(grid_refractor,SCREEN_SIZE_X-grid_refractor-object_type.WIDTH)
             y = random.randint(grid_refractor,SCREEN_SIZE_Y-grid_refractor)
-        each.append(object_type(x, y))
-    return each
+        object_type.each.append(object_type(x, y))
 #------------DISPLAYING
 def display_all(rabbit_picture, bush_picture, whole_picture, eagle_picture):
     #a bit tricky, only rabbit_picture is a list, the others are single surfaces
     display_background(SCREEN_SIZE_X, SCREEN_SIZE_Y)
+    display_object(Whole.each, whole_picture)
+    display_object(Bush.each, bush_picture)
     display_rabbit(Rabbit.each, rabbit_picture)
-    display_object(Whole.each, bush_picture)
-    display_object(Bush.each, whole_picture)
-    display_object(Eagle.each_eagle, eagle_picture)
+    display_object_angle(Eagle.each_eagle, eagle_picture)
 def display_rabbit(rabbits_list, picture):
     for rabbit in rabbits_list:
             #8 images per color -> rabbit.color*8
@@ -137,6 +135,9 @@ def display_object(list, picture):
     #input: list of the object, just on picture
     for element in list:
             screen.blit(picture, (element.x,element.y))
+def display_object_angle(list, picture):
+    for element in list:
+        screen.blit(pygame.transform.rotate(picture, element.angle), (element.x,element.y))
 def display_background(x, y):
     image_grass_background = pygame.image.load('./src/images/map/grass.png')    
     width = image_grass_background.get_width()
@@ -166,6 +167,8 @@ def eagle_operating():
             
             print(len(Rabbit.each))
     if len(Rabbit.each) <= 1:#if only one rabbit won't be able to love
+        if Rabbit.each[0].player != True:
+            print("player eaten")
         print("game over")
         pygame.display.quit
         pygame.QUIT
@@ -174,11 +177,11 @@ def rabbit_operating():
     for rabbit in Rabbit.each:
         if rabbit.player == False:
             rabbit.reactions()
-def collision(x,y):
-    every_objects = [Whole.each, Bush.each, Rabbit.each]
+def collision(x,y, width, height):
+    every_objects = [Whole.each, Bush.each]
     for objects in every_objects:
         for object in objects:
-            if abs(object.x-x) < object.WIDTH and abs(object.y-y) < object.HEIGHT:
+            if object.x-width < x and x < object.x+object.WIDTH and object.y-height < y and y < object.y+object.HEIGHT:
                 return True
     return False
 #for futur improvments, create a function that creates many rabbit with infinit composition of colors

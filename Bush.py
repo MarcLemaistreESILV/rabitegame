@@ -3,7 +3,7 @@ class Bush:
     each = []
     WIDTH = 0
     HEIGHT = 0
-    orientation = 5
+    orientation = 4
     def __init__(self, x, y):
         self.x = x
         self.y = y

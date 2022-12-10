@@ -17,12 +17,12 @@ class Eagle:
         #moving features
         self.x = x
         self.y = y
+        #futur improvment moove by vector
         self.x_target = 0
         self.y_target = 0
-        self.x_increment = 0
-        self.y_increment= 0
         self.new_target()        
         self.each_eagle.append(self)
+        self.angle = 0
     @staticmethod
     def set_increment(start, end):
         #return an int stating in wich way to increment
@@ -66,12 +66,40 @@ class Eagle:
                 self.y_increment = Eagle.set_increment(self.y, self.y_target)
     def move(self):
         is_arrived = True
-        if self.x != self.x_target:
-            self.x +=self.x_increment*1
-        if self.y != self.y_target:
-            self.y += self.y_increment*1
-        elif self.x == self.x_target:
+        self.angle =0
+        if self.x < self.x_target:
+            if self.y < self.y_target:
+                self.x +=1
+                self.y+=1
+                self.angle = 315
+            elif self.y > self.y_target:
+                self.x +=1
+                self.y-=1
+                self.angle = 45
+            else:
+                self.x +=1
+                self.angle = 0
+        elif self.x > self.x_target:
+            if self.y < self.y_target:
+                self.x -=1
+                self.y+=1
+                self.angle = 225
+            elif self.y > self.y_target:
+                self.x -=1
+                self.y-=1
+                self.angle = 135
+            else:
+                self.x -=1
+                self.angle = 180
+        elif self.y < self.y_target:
+            self.y+=1
+            self.angle = 270
+        elif self.y > self.y_target:
+            self.y-=1
+            self.angle = 90
+        else:
             self.kill_eagle()
+        self.angle+=90
     def kill_rabbit(self, rabbits):
         rabbits_killed = []
         for rabbit in rabbits:
