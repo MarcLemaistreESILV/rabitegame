@@ -3,7 +3,7 @@ top secret
 Marc Lemaistre 22170166
 
 ****LICENSE****
-no license, you can use it as you want I don't care
+MIT license, but feel free to use I don't care
 
 ****GAME FUNCTOIONNING*****
 THis projecte called rabbit game is about trying to make as many rabbit as possible
@@ -23,4 +23,5 @@ However it is still possible. That is the reason why bushes and wholes are gener
 you see the name relative_x in the rabbit's parameters.
 Finally I want to improve on the changing color. Indeed I didn't find the lirary I was looking for. So what I want to do is changing the color of the rabbits to make the color
 also an evlotuive parameter.
-
+little image to see the game while working
+![image](https://user-images.githubusercontent.com/98088714/206866591-4dd08e4e-3d47-47ec-af71-2468dc2465b8.png)
