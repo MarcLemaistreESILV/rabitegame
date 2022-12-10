@@ -35,34 +35,22 @@ then run wheel on the file dowload pip install C://Users/marcl/Downloads/pygame-
 
 #--------------INITIALIZING
 def screen_init(width, height):
-   #calculates screen dimensions
     SCREEN_SIZE_X = width
     SCREEN_SIZE_Y = height
-    AVERGAE_SCREEN_SIZE = (SCREEN_SIZE_Y+SCREEN_SIZE_X)/2
-    WIDTH_SQUARE = (int)(AVERGAE_SCREEN_SIZE/10)
-    HEIGHT_SQUARE = (int)(AVERGAE_SCREEN_SIZE/10)
-    LIGNE = (int)(SCREEN_SIZE_Y/HEIGHT_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 ->10
-    COLUMN = (int)(SCREEN_SIZE_X/WIDTH_SQUARE)-1#0,1,2,3,4,5,6,7,8,9 -> 10
-
+    Eagle.SCREEN_SIZE_X = SCREEN_SIZE_X
+    Eagle.SCREEN_SIZE_Y = SCREEN_SIZE_Y
+    Rabbit.SCREEN_SIZE_X = SCREEN_SIZE_X
+    Rabbit.SCREEN_SIZE_Y = SCREEN_SIZE_Y
     #Display screen
     screen = pygame.display.set_mode((SCREEN_SIZE_X,SCREEN_SIZE_Y))
-
-    #Shape of screen
     pygame.display.set_caption("The Amazing Rabite game")
     icon = pygame.image.load('./src/images/icone.ico')
     pygame.display.set_icon(icon)
-
-    #initializes and places pictures
-    game_grid = []
-    for i in range(0, LIGNE+1):
-        line = []
-        for j in range(0, COLUMN+1):
-            line.append(7)
-        game_grid.append(line)
-    return screen, game_grid, SCREEN_SIZE_X ,SCREEN_SIZE_Y, AVERGAE_SCREEN_SIZE, LIGNE, COLUMN, WIDTH_SQUARE, HEIGHT_SQUARE
+    return screen, SCREEN_SIZE_X ,SCREEN_SIZE_Y
 def dimensions_init():
-    Rabbit.COLUMN = COLUMN
-    Rabbit.LIGNE = LIGNE
+    AVERGAE_SCREEN_SIZE = (int)((SCREEN_SIZE_X+SCREEN_SIZE_Y)/2)
+    Rabbit.X = SCREEN_SIZE_X
+    Rabbit.Y = SCREEN_SIZE_Y
     Rabbit.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
     Rabbit.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
     Eagle.WIDTH = (int)(AVERGAE_SCREEN_SIZE/10)
@@ -78,17 +66,17 @@ def initialization():
     rabbit_picture_files_names_moving=['up.png', 'down.png', 'left.png', 'right.png']
     rabbit_picture_file_name_extras = [["head.png", 50, 50], ["invisible.png", 0,0]]
     rabbit_picture= load_images(Rabbit.WIDTH, Rabbit.HEIGHT, "rabbit/", rabbit_picture_files_names_moving, ["blue/", "orange/"], ["up/", "down/"], rabbit_picture_file_name_extras)
-    Rabbit.each_rabbit = initialize_each(Rabbit, Rabbit.WIDTH, Rabbit.HEIGHT, 4, 4, 0,3)
+    Rabbit.each = initialize_each(Rabbit, 4, 4)
 
     #set the player special features
-    Rabbit.each_rabbit[0].color = 0
-    Rabbit.each_rabbit[0].ligne = 5
-    Rabbit.each_rabbit[0].column = 5
-    Rabbit.each_rabbit[0].player = True
+    Rabbit.each[0].color = 0
+    Rabbit.each[0].ligne = 5
+    Rabbit.each[0].column = 5
+    Rabbit.each[0].player = True
     bush_picture= load_image(Bush.WIDTH, Bush.HEIGHT, "bush/", 'bush_back.png')
-    Bush.each = initialize_each(Bush, Bush.WIDTH, Bush.HEIGHT, NUMBER_OF_BUSH, NUMBER_OF_BUSH, 1, 1)
+    Bush.each = initialize_each(Bush, NUMBER_OF_BUSH, NUMBER_OF_BUSH, 1)
     whole_picture= load_image(Bush.WIDTH, Bush.HEIGHT, "whole/", 'terrier_1_b.png')
-    Whole.each = initialize_each(Whole, Whole.WIDTH, Whole.HEIGHT, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, 1, 2)
+    Whole.each = initialize_each(Whole, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, 2)
     eagle_picture = load_image( Eagle.WIDTH, Eagle.HEIGHT, "eagle/", "eagle_flying.png")
     Eagle.each_eagle = []
     return rabbit_picture, bush_picture, whole_picture, eagle_picture
@@ -109,33 +97,30 @@ def load_images(width, height, folder, file_names, colors=[""], postures=[""], e
 def load_image(width, height, folder, file_name):
     path = str('./src/images/'+folder+file_name)
     return pygame.transform.scale(pygame.image.load(path), (width, height))
-def initialize_each(object_type, width, height, min_number, max_number, grid_refractor=0, object_type_number = 1): 
+def initialize_each(object_type, min_number, max_number, grid_refractor=0): 
     #parameters are displayed as (who, specificly who, to make the function work)
     #for futur improvments be able to change the objectstype number so we could initialize rabbits at
     #the same place or in bushes/wholes
     each = []
     number = random.randint(min_number, max_number)
-    for create_iteration in range(0, number):
-        column = random.randint(grid_refractor,COLUMN-grid_refractor)
-        ligne = random.randint(grid_refractor,LIGNE-grid_refractor)
-        while(game_grid[ligne][column] != 7):
-            column = random.randint(grid_refractor, COLUMN-grid_refractor)
-            ligne = random.randint(grid_refractor, LIGNE-grid_refractor)
-        game_grid[ligne][column] = object_type_number
-        each.append(object_type(column, ligne))
+    for i in range(number):
+        x = random.randint(grid_refractor,SCREEN_SIZE_X-grid_refractor-object_type.WIDTH)
+        y = random.randint(grid_refractor,SCREEN_SIZE_Y-grid_refractor)
+        while(collision(x,y)):
+            x = random.randint(grid_refractor,SCREEN_SIZE_X-grid_refractor-object_type.WIDTH)
+            y = random.randint(grid_refractor,SCREEN_SIZE_Y-grid_refractor)
+        each.append(object_type(x, y))
     return each
 #------------DISPLAYING
 def display_all(rabbit_picture, bush_picture, whole_picture, eagle_picture):
     #a bit tricky, only rabbit_picture is a list, the others are single surfaces
     display_background(SCREEN_SIZE_X, SCREEN_SIZE_Y)
-    display_rabbit(Rabbit.each_rabbit, rabbit_picture)
+    display_rabbit(Rabbit.each, rabbit_picture)
     display_object(Whole.each, bush_picture)
     display_object(Bush.each, whole_picture)
     display_object(Eagle.each_eagle, eagle_picture)
 def display_rabbit(rabbits_list, picture):
     for rabbit in rabbits_list:
-            x = (int)(rabbit.column*WIDTH_SQUARE+rabbit.relative_x)
-            y = (int)(rabbit.ligne*HEIGHT_SQUARE+rabbit.relative_y)
             #8 images per color -> rabbit.color*8
             #2 state per orientation -> rabbit orientation*2
             #and then the state +rabbit.posture
@@ -146,14 +131,12 @@ def display_rabbit(rabbits_list, picture):
             #          ...]
             position = rabbit.color*12+rabbit.posture*6+rabbit.orientation
             surface = picture[position]
-            screen.blit(surface, (x,y))
+            screen.blit(surface, (rabbit.x,rabbit.y))
 def display_object(list, picture):
     #display an object
     #input: list of the object, just on picture
     for element in list:
-            x = (int)(element.column*WIDTH_SQUARE+element.relative_x)
-            y = (int)(element.ligne*HEIGHT_SQUARE+element.relative_y)
-            screen.blit(picture, (x,y))
+            screen.blit(picture, (element.x,element.y))
 def display_background(x, y):
     image_grass_background = pygame.image.load('./src/images/map/grass.png')    
     width = image_grass_background.get_width()
@@ -173,20 +156,31 @@ def eagle_operating():
     rabbits_killed = []
     for eagle in Eagle.each_eagle:
         eagle.move()
-        rabbits_killed = eagle.kill_rabbit(Rabbit.each_rabbit)
-    for rabbit in rabbits_killed:
-        Rabbit.each_rabbit.remove(rabbit)
-        print(len(Rabbit.each_rabbit))
-    if len(Rabbit.each_rabbit) <= 1:#if only one rabbit won't be able to love
+        rabbits_killed.append(eagle.kill_rabbit(Rabbit.each))
+    for rabbits in rabbits_killed:
+        for rabbit in rabbits:
+            try:
+                Rabbit.each.remove(rabbit)
+            except Exception:
+                pass
+            
+            print(len(Rabbit.each))
+    if len(Rabbit.each) <= 1:#if only one rabbit won't be able to love
         print("game over")
         pygame.display.quit
         pygame.QUIT
         sys.exit() 
 def rabbit_operating():
-    for rabbit in Rabbit.each_rabbit:
+    for rabbit in Rabbit.each:
         if rabbit.player == False:
             rabbit.reactions()
-
+def collision(x,y):
+    every_objects = [Whole.each, Bush.each, Rabbit.each]
+    for objects in every_objects:
+        for object in objects:
+            if abs(object.x-x) < object.WIDTH and abs(object.y-y) < object.HEIGHT:
+                return True
+    return False
 #for futur improvments, create a function that creates many rabbit with infinit composition of colors
 #def rabbit_collusion()
 #initialize
@@ -201,21 +195,17 @@ a bush or a whole takes multiple squares
 NUMBER_OF_BUSH = 3
 NUMBER_OF_WHOLE = 3
 
-(screen, game_grid, SCREEN_SIZE_X ,SCREEN_SIZE_Y, AVERGAE_SCREEN_SIZE, LIGNE, COLUMN,  WIDTH_SQUARE, HEIGHT_SQUARE) = screen_init(500, 500)
+(screen, SCREEN_SIZE_X ,SCREEN_SIZE_Y) = screen_init(500, 500)
 dimensions_init()
 (rabbit_picture, bush_picture, whole_picture, eagle_picture)= initialization()
 
 #Game Loop
-#If I have the time I should check:
-#FPS:
-#UPS:
-
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    Rabbit.each_rabbit[0].actions()        
+    Rabbit.each[0].actions()        
     
     operating()
     display_all(rabbit_picture, bush_picture, whole_picture, eagle_picture)    

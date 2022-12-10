@@ -11,86 +11,71 @@ class Eagle:
     #design features
     WIDTH = 0
     HEIGHT = 0
-    def __init__(self, column, ligne):
+    SCREEN_SIZE_X = 0
+    SCREEN_SIZE_Y = 0
+    def __init__(self, x, y):
         #moving features
-        self.relative_x =0
-        self.relative_y =0
-        self.column = 0
-        self.ligne = 0
-        self.target_column = 0
-        self.target_ligne = 0
-        self.column_increment = 0
-        self.ligne_increment= 0
-        self.new_target(column, ligne)        
+        self.x = x
+        self.y = y
+        self.x_target = 0
+        self.y_target = 0
+        self.x_increment = 0
+        self.y_increment= 0
+        self.new_target()        
         self.each_eagle.append(self)
-    
     @staticmethod
     def set_increment(start, end):
         #return an int stating in wich way to increment
-        #inputs: starting ligne/column and arrivings
+        #inputs: starting y/x and arrivings
         increment = 1
         if start > end:
             increment=-1
         elif start == end:
             increment = 0
         return increment
-    def new_target(self, columns, lignes):
+    def new_target(self):
         starting_border = random.randint(0,3)
         match starting_border:
             case 0:#en haut
-                self.column = random.randint(0, columns)
-                self.ligne = 0
-                self.target_column = random.randint(0, columns)
-                self.target_ligne = lignes
-                self.ligne_increment =1
-                self.column_increment = Eagle.set_increment(self.column, self.target_column)
+                self.x = random.randint(0, Eagle.SCREEN_SIZE_X)
+                self.y = 0
+                self.x_target = random.randint(0, Eagle.SCREEN_SIZE_X)
+                self.y_target = Eagle.SCREEN_SIZE_Y
+                self.y_increment =1
+                self.x_increment = Eagle.set_increment(self.x, self.x_target)
             case 1:#en bas
-                self.column = random.randint(0, columns)
-                self.ligne =lignes
-                self.target_column = random.randint(0, columns)
-                self.target_ligne = 0
-                self.ligne_increment=-1
-                self.column_increment = Eagle.set_increment(self.column, self.target_column)
+                self.x = random.randint(0, Eagle.SCREEN_SIZE_X)
+                self.y =Eagle.SCREEN_SIZE_Y
+                self.x_target = random.randint(0, Eagle.SCREEN_SIZE_X)
+                self.y_target = 0
+                self.y_increment=-1
+                self.x_increment = Eagle.set_increment(self.x, self.x_target)
             case 2:#à gauche
-                self.column = 0
-                self.ligne = random.randint(0, lignes)
-                self.target_column = columns
-                self.target_ligne = random.randint(0, lignes)
-                self.column_increment = 1
-                self.ligne_increment = Eagle.set_increment(self.ligne, self.target_ligne)
+                self.x = 0
+                self.y = random.randint(0, Eagle.SCREEN_SIZE_Y)
+                self.x_target = Eagle.SCREEN_SIZE_X
+                self.y_target = random.randint(0, Eagle.SCREEN_SIZE_Y)
+                self.x_increment = 1
+                self.y_increment = Eagle.set_increment(self.y, self.y_target)
             case 3:#à droite
-                self.column = columns
-                self.ligne = random.randint(0, lignes)
-                self.target_column = 0
-                self.target_ligne = random.randint(0, lignes)
-                self.column_increment = -1
-                self.ligne_increment = Eagle.set_increment(self.ligne, self.target_ligne)
+                self.x = Eagle.SCREEN_SIZE_X
+                self.y = random.randint(0, Eagle.SCREEN_SIZE_Y)
+                self.x_target = 0
+                self.y_target = random.randint(0, Eagle.SCREEN_SIZE_Y)
+                self.x_increment = -1
+                self.y_increment = Eagle.set_increment(self.y, self.y_target)
     def move(self):
         is_arrived = True
-        if self.column != self.target_column:
-            self.relative_x +=self.column_increment*1
-            is_arrived = False
-            if abs(self.WIDTH) < abs(self.relative_x):
-                self.column +=self.column_increment
-                self.relative_x=0
-        if self.ligne != self.target_ligne:
-            self.relative_y += self.ligne_increment*1
-            is_arrived = False
-            if abs(self.HEIGHT) < abs(self.relative_y):
-                self.ligne +=self.ligne_increment
-                self.relative_y=0
-        if is_arrived:
+        if self.x != self.x_target:
+            self.x +=self.x_increment*1
+        if self.y != self.y_target:
+            self.y += self.y_increment*1
+        elif self.x == self.x_target:
             self.kill_eagle()
     def kill_rabbit(self, rabbits):
         rabbits_killed = []
         for rabbit in rabbits:
-                #50 is the width and height of the grid
-                #at the end the grid is a loss of time
-                absolute_position_rabbit_x = rabbit.relative_x+rabbit.column*50
-                absolute_position_rabbit_y = rabbit.relative_y+rabbit.ligne*50
-                absolute_position_eagle_x = self.relative_x+self.column*50
-                absolute_position_eagle_y = self.relative_y+self.ligne*50
-                if abs(absolute_position_rabbit_x-absolute_position_eagle_x) < (int)(Eagle.WIDTH/2) and abs(absolute_position_rabbit_y-absolute_position_eagle_y) < (int)(Eagle.HEIGHT/2):
+                if abs(self.x-rabbit.x) < (int)(Eagle.WIDTH/5) and abs(self.y-rabbit.y) < (int)(Eagle.HEIGHT/5):
                     if rabbit.hidden <= 0:
                         rabbits_killed.append(rabbit)
         return rabbits_killed

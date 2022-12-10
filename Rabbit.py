@@ -5,12 +5,13 @@ from Bush import Bush
 from Whole import Whole
 
 class Rabbit:         
-    each_rabbit = []
-    COLUMN = 0
-    LIGNE = 0
+    each = []
     WIDTH =0 
     HEIGHT =0
-    def __init__(self, column, ligne, fastness_mother=10, color = 1):
+    SCREEN_SIZE_X = 0
+    SCREEN_SIZE_Y = 0
+
+    def __init__(self, x, y, fastness_mother=10, color = 1):
         #for futur improvments create gens for:
         #color, fastness, sensibility, alerting capabilities, number of child
         #feature
@@ -32,71 +33,65 @@ class Rabbit:
         self.player = False
 
         #positionnal
-        self.column = column
-        self.ligne = ligne
-        self.relative_x = 0
-        self.relative_y = 0
+        self.x = x
+        self.y = y
         #targeted point
-        self.target_column = 0
-        self.target_ligne = 0
+        self.x_target = 0
+        self.y_target = 0
         self.new_target()#has to know some of its parameters (alert)
       
     def love(self):
         #check if any rabbit is avaible and love with the one he can
-        for rabbit in self.each_rabbit:
-            if rabbit != self:
-                if rabbit.column == self.column and rabbit.ligne == self.ligne:
-                    self.each_rabbit.append(Rabbit(self.column, self.ligne, self.WIDTH, self.HEIGHT, rabbit.fastness, rabbit.color))
-                    break
+        mother = self.collision_list(self.each)
+        if mother != None:
+            self.each.append(Rabbit(self.x, self.y, mother.fastness, mother.color))
     #----------------------alerting & hiding
     def alerted(rabbit):
         #alerts a rabbit
         if random.randint(0, rabbit.sensibility) < 100:#should be 2 or 3 in real game
             rabbit.alert = True
             rabbit.find_hide()
-            print("e")
+            #print("e")
     def alerts(self): 
         #alerts every rabbits around it    
         #check rabbits around
-        for rabbit in self.each_rabbit:
+        for rabbit in self.each:
             if not rabbit.alert:
-                if abs(rabbit.column-self.column) < self.alerting_capabilities:
+                if abs(rabbit.x-self.x) < self.alerting_capabilities:
                     rabbit.alerted()
         #check if sees an eagle (sometme false alert)
         if random.randint(0, (int)(self.sensibility/(len(Eagle.each_eagle)+1))) > 20:
             self.alerted()
     def find_hide(self):        
         hide = self.closest_hide()
-        self.target_column = hide.column
-        self.target_ligne = hide.ligne
+        self.x_target = hide.x
+        self.y_target = hide.y
         self.hide_object = hide
-        print(self.hide_object.number_of_rabbit)
     def closest_hide(self):
-        total_distance = 100
-        total_hide = None
+        final_distance = self.SCREEN_SIZE_X+self.SCREEN_SIZE_Y#to be sur it's a maximum
+        final_hide = None
         for hides in [Whole.each, Bush.each]:
             for hide  in hides:
-                distance = abs(hide.column-self.column)+abs(hide.ligne-self.ligne)
+                distance = abs(hide.x-self.x)+abs(hide.y-self.y)
                 #if equals to 0 it meens he is on the hide
                 #so if he is on a hide but he can't hide, the hide is full
-                if distance != 0 and total_distance > distance:
-                    total_distance = distance
-                    total_hide = hide
-        return total_hide
-    def can_hide(self):
+                if  final_distance > distance and Rabbit.can_hide(hide):
+                    final_distance = distance
+                    final_hide = hide
+        return final_hide
+    @staticmethod
+    def can_hide(hide):
         #find closest hide where he can hide and return it
-        if self.hide_object.number_of_rabbit < self.hide_object.max_rabbit:
+        if hide.number_of_rabbit < hide.max_rabbit:
             return True
         else:
             return False
     def hide(self):
-        if self.can_hide():
+        if Rabbit.can_hide(self.hide_object):
             self.hidden = 1
             self.hide_object.number_of_rabbit +=1
-            self.column =  self.hide_object.column
-            self.ligne =  self.hide_object.ligne
-            self.relative_x = random.randint(0, self.hide_object.WIDTH)
-            self.relative_y = random.randint(0, self.hide_object.HEIGHT)
+            self.x =  self.hide_object.x+random.randint(0, self.hide_object.WIDTH)
+            self.y =  self.hide_object.y+random.randint(0, self.hide_object.HEIGHT)
             self.orientation = self.hide_object.orientation
         else:
             self.hide_object = None
@@ -110,43 +105,39 @@ class Rabbit:
     #----------------------end of alerting and hiding
     def new_eagle(self):
         if random.randint(0, 10) > 0:#0-> 9 //mofify just for debugging
-            Eagle(self.COLUMN, self.LIGNE)
+            Eagle(self.x, self.y)
         self.alerted()
         if self.alert == True:
             self.alerts()
     def new_target(self):
-        #find new target or new hide or hide
-        #maybefutur improvment find if there is the place befor going?
-        #set target
-        self.target_column = random.randint(0, self.COLUMN-1) 
-        self.target_ligne = random.randint(0, self.LIGNE-1)
+        self.x_target = random.randint(0, self.SCREEN_SIZE_X-self.WIDTH) 
+        self.y_target = random.randint(0, self.SCREEN_SIZE_Y-self.HEIGHT)
     #---------------------start of positionnal block
     def direction(self):
         #finds the right direction and calls move_command
         #can also change target (if achieve)
         #to make the move more natural (not linear moves)
         if random.randint(0,1) == 0:
-            self.direction_column()
+            self.direction_x()
         else:
-            self.direction_ligne()
-    def direction_column(self):
-        if self.column < self.target_column:
-            #we are already certain the rabbit won't leave the screen for too lang
-            self.move([False, False, False, True])
-        elif self.column > self.target_column:
+            self.direction_y()
+    def direction_x(self):
+        #because we are moving 2 by 2 values will never be reached so we make it aproximately
+        if self.x+2 < self.x_target :
+            self.move([False, False, False, True])#u,d,l,r
+        elif self.x-2 > self.x_target:
             self.move([False, False, True, False])
-        elif self.ligne != self.target_ligne:
-            self.direction_ligne()
+        elif abs(self.y - self.y_target) > 10:
+            self.direction_y()
         else:
             self.arrived()
-    def direction_ligne(self):
-        if self.ligne > self.target_ligne:
-        #we are already certain the rabbit won't leave the screen for too lang
-            self.move([True, False, False, False])
-        elif self.ligne < self.target_ligne:
-            self.move([False,True, False, False])
-        elif self.column != self.target_column:
-            self.direction_column()
+    def direction_y(self):
+        if self.y+2 < self.y_target:
+            self.move([False, True, False, False])
+        elif self.y-2 > self.y_target:
+            self.move([True, False,  False, False])
+        elif abs(self.x-self.x_target) > 10:
+            self.direction_x()
         else:
             self.arrived()
     def arrived(self):
@@ -158,57 +149,51 @@ class Rabbit:
         else:
             self.new_eagle()
             self.new_target()
-    def collision(self, object):
+    def collision_object(self, object):
         #returns true if collision, false otherwise
-        if abs(self.column-object.column) <= 1 and abs(self.ligne-object.ligne) <= 1:
-            absolute_position_rabbit_x = self.relative_x+self.column*50
-            absolute_position_rabbit_y = self.relative_y+self.ligne*50
-            absolute_position_object_x = object.relative_x+object.column*50
-            absolute_position_object_y = object.relative_y+object.ligne*50
-            if abs(absolute_position_rabbit_x-absolute_position_object_x) < (int)(object.WIDTH/2) and abs(absolute_position_rabbit_y-absolute_position_object_y) < (int)(object.HEIGHT/2):
-                return True
-            else:
-                return False
+        if abs(self.x-object.x) <= 10 and abs(self.y-object.y) <= 10 and self != object:
+            return True
+        return False
+    def collision_list(self, each):
+        #returns the object collided
+        for object in each:
+            if self.collision_object(object):
+                return object
+        return None
+    def collision_all(self, list):
+        for objects in list:
+            result = self.collision_list(objects)
+            if result != None:
+                return result
+        return None
     #---------------------start of action
     def move(self, direction):
         #input any rabbit (even the player) with a table giving its position [true, false, false,false]
         #finds the new picture and the new position
         #enter the move section
         if direction[0]:#up
-            #print("up")
-            if self.relative_y-1 < 0:
-                if self.ligne>=0:
-                    self.relative_y = self.HEIGHT
-                    self.ligne = self.ligne-1
-            else:
-                self.relative_y = self.relative_y-1
+            if self.y >= 0:
+                self.y-=2
+                #else:
+                #print("out of screen up")
             self.orientation = 0
         elif direction[1]:#down
-            #print("down")
-            if self.relative_y+1 > self.HEIGHT:
-                if self.ligne < self.LIGNE:
-                    self.relative_y = 0
-                    self.ligne = self.ligne+1
-            else:
-                self.relative_y = self.relative_y+1
+            if self.y <= self.SCREEN_SIZE_Y-self.HEIGHT:
+                self.y+=2
+                #else:
+                #print("out of screen down")
             self.orientation = 1
         elif direction[2]:#left
-            #print("left")
-            if self.relative_x-1 < 0:
-                if self.column > 0 :
-                    self.relative_x = self.WIDTH
-                    self.column = self.column-1
-            else:
-                self.relative_x = self.relative_x-1
+            if self.x >=0:
+                self.x-=2
+                #else:
+                #print("out of screen left")
             self.orientation = 2
         elif direction[3]:#right
-            #print("right")
-            if self.relative_x+1 > self.WIDTH:
-                if self.column < self.COLUMN-1:
-                    self.relative_x = 0
-                    self.column = self.column+1
-            else:
-                self.relative_x = self.relative_x+1
+            if self.x <= self.SCREEN_SIZE_X-self.WIDTH:
+                self.x+=2
+                #else:
+                #print("out of screen left")
             self.orientation = 3
     def reactions(self):
         if self.hidden == 0:
@@ -222,16 +207,16 @@ class Rabbit:
         #calls the functions for the right action
         keys = pygame.key.get_pressed()
         if keys[pygame.K_l]:
-            #print("love")
+            ##print("love")
             self.love()
         elif keys[pygame.K_h]:
-            #print("alert")
+            ##print("alert")
             self.alerts()
         elif keys[pygame.K_h]:
-            #print("hide")
+            ##print("hide")
             self.hide()
         elif keys[pygame.K_h]:
-            #print("unhide")
+            ##print("unhide")
             self.unhide()
         else:
             self.move([keys[pygame.K_w], keys[pygame.K_a], keys[pygame.K_s], keys[pygame.K_d]])
