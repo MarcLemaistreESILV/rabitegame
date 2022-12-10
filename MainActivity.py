@@ -5,6 +5,8 @@ from Bush import Bush
 from Eagle import Eagle
 import sys
 import keyboard
+from tkinter import *
+from tkinter.ttk import *
 """ 
 normal rabbit class, posses:
     -rabbit constructor
@@ -13,6 +15,7 @@ normal rabbit class, posses:
 WARNING: rabbit != player
 """
 from Rabbit import Rabbit
+from PIL import Image
 """
 pygame is an open library used to code simple games easily
 first you have to install latest pip and py version
@@ -110,14 +113,14 @@ def initialize_each(object_type, min_number, max_number, grid_refractor=0):
             y = random.randint(grid_refractor,SCREEN_SIZE_Y-grid_refractor)
         object_type.each.append(object_type(x, y))
 #------------DISPLAYING
-def display_all(rabbit_picture, bush_picture, whole_picture, eagle_picture):
+def display_all(animation, rabbit_picture, bush_picture, whole_picture, eagle_picture):
     #a bit tricky, only rabbit_picture is a list, the others are single surfaces
     display_background(SCREEN_SIZE_X, SCREEN_SIZE_Y)
     display_object(Whole.each, whole_picture)
     display_object(Bush.each, bush_picture)
-    display_rabbit(Rabbit.each, rabbit_picture)
+    display_rabbit(animation,Rabbit.each, rabbit_picture)
     display_object_angle(Eagle.each_eagle, eagle_picture)
-def display_rabbit(rabbits_list, picture):
+def display_rabbit(animation, rabbits_list, picture):
     for rabbit in rabbits_list:
             #8 images per color -> rabbit.color*8
             #2 state per orientation -> rabbit orientation*2
@@ -127,7 +130,10 @@ def display_rabbit(rabbits_list, picture):
             #example: [buu, bud, bul, bur, buh, bdu, bdd, bdl, bdr, bdh, i
             #          ouu, obud, oul, our, odu, odd, odl, odr
             #          ...]
-            position = rabbit.color*12+rabbit.posture*6+rabbit.orientation
+            if animation > 10:
+                position = rabbit.color*12+0*6+rabbit.orientation
+            else:
+                position = rabbit.color*12+1*6+rabbit.orientation
             surface = picture[position]
             screen.blit(surface, (rabbit.x,rabbit.y))
 def display_object(list, picture):
@@ -152,7 +158,7 @@ def display_background(x, y):
 #---------OPERATING
 def operating():
     rabbit_operating()
-    eagle_operating()
+    return eagle_operating()
 def eagle_operating():
     rabbits_killed = []
     for eagle in Eagle.each_eagle:
@@ -164,15 +170,12 @@ def eagle_operating():
                 Rabbit.each.remove(rabbit)
             except Exception:
                 pass
-            
-            print(len(Rabbit.each))
     if len(Rabbit.each) <= 1:#if only one rabbit won't be able to love
-        if Rabbit.each[0].player != True:
-            print("player eaten")
-        print("game over")
-        pygame.display.quit
-        pygame.QUIT
-        sys.exit() 
+        return False
+    elif Rabbit.each[0].player != True:
+        print("player eaten")
+        return False
+    return True
 def rabbit_operating():
     for rabbit in Rabbit.each:
         if rabbit.player == False:
@@ -197,24 +200,36 @@ a bush or a whole takes multiple squares
 """
 NUMBER_OF_BUSH = 3
 NUMBER_OF_WHOLE = 3
-
+max_rabbit = 0
 (screen, SCREEN_SIZE_X ,SCREEN_SIZE_Y) = screen_init(500, 500)
 dimensions_init()
 (rabbit_picture, bush_picture, whole_picture, eagle_picture)= initialization()
 
 #Game Loop
+animation =0
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
     Rabbit.each[0].actions()        
-    
-    operating()
-    display_all(rabbit_picture, bush_picture, whole_picture, eagle_picture)    
-    pygame.display.flip()
-    clock.tick(100)
+    if len(Rabbit.each) > max_rabbit:
+        max_rabbit = len(Rabbit.each)
+    running = operating()
+    animation+=1
 
+    if animation > 20:
+        animation = 0
+        
+    display_all(animation, rabbit_picture, bush_picture, whole_picture, eagle_picture) 
+        
+    pygame.display.flip()
+    clock.tick(50)
+
+surface = pygame.transform.scale(pygame.image.load("./src/images/game_over.png"), (SCREEN_SIZE_X, SCREEN_SIZE_Y))
+screen.blit(surface, (0,0))
+pygame.display.flip()
+pygame.time.delay(2000)
 pygame.quit()
 exit()
 

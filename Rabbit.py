@@ -11,7 +11,7 @@ class Rabbit:
     SCREEN_SIZE_X = 0
     SCREEN_SIZE_Y = 0
 
-    def __init__(self, x, y, fastness_mother=2, color = [100,100,240]):
+    def __init__(self, x, y, fastness_mother=2, color = 1, eagle = 7):
         #for futur improvments create gens for:
         #color, fastness, sensibility, alerting capabilities, number of child
         #feature
@@ -22,8 +22,9 @@ class Rabbit:
         self.fastness = (int)(fastness_mother+2-random.randint(0, 3))
         self.age = 0
         self.alerting_capabilities = 3
-        self.color = color#0=orange 1=blue....
+        self.color=color
         self.sensibility = 10
+        self.eagle = eagle+1-random.randint(0,2)
 
         #for the game
         self.hide_object = None
@@ -105,7 +106,7 @@ class Rabbit:
         self.new_target()
     #----------------------end of alerting and hiding
     def new_eagle(self):
-        if random.randint(0, 10) > 7:#0-> 9 //mofify just for debugging
+        if random.randint(0, 10) > self.eagle:#0-> 9 //mofify just for debugging
             Eagle(self.x, self.y)
         self.alerted()
         if self.alert == True:
@@ -153,9 +154,10 @@ class Rabbit:
     def collision_object(self, object):
         #returns true if collision, false otherwise
         #(X+ W/4)-w < x < (X+ W/4)+ W/2
-        if object.x -(int)(self.WIDTH) < self.x and self.x < object.x + (int)(object.WIDTH):
-            if object.y - (int)(self.HEIGHT)-20< self.y and self.y < object.y + (int)(object.HEIGHT)-(int)(self.HEIGHT):
-                return True
+        if object != self:
+            if object.x -(int)(self.WIDTH) < self.x and self.x < object.x + (int)(object.WIDTH):
+                if object.y - (int)(self.HEIGHT)< self.y and self.y < object.y + (int)(object.HEIGHT):
+                    return True
         return False
     def collision_list(self, each):
         #returns the object collided
@@ -222,13 +224,6 @@ class Rabbit:
                 self.alert = False
                 self.hidden = 0
                 self.orientation=1
-    def animate(self):
-        #change the number this number will be use to change the index of the picture we display
-        #=>change the posture
-        if self.posture == 0:
-            self.posture = 1
-        else:
-            self.posture = 0
     def can_play(self):
         if self.pause > 200:#put to 200
             self.pause = 0

@@ -103,7 +103,7 @@ class Eagle:
     def kill_rabbit(self, rabbits):
         rabbits_killed = []
         for rabbit in rabbits:
-                if abs(self.x-rabbit.x) < (int)(Eagle.WIDTH/5) and abs(self.y-rabbit.y) < (int)(Eagle.HEIGHT/5):
+                if self.x < rabbit.x and rabbit.x < self.x+self.WIDTH and self.y < rabbit.y and rabbit.y < self.y + self.HEIGHT:
                     if rabbit.hidden <= 0:
                         rabbits_killed.append(rabbit)
         return rabbits_killed
