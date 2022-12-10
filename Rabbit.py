@@ -14,7 +14,7 @@ class Rabbit:
         #for futur improvments create gens for:
         #color, fastness, sensibility, alerting capabilities, number of child
         #feature
-        self.orientation = 0#(up,down,left, right, hide)=(0,1,2,3,4)
+        self.orientation = 0#(up,down,left, right, hide, invisible)=(0,1,2,3,4,5)
         self.posture = 0
         
         #rabbit genes
@@ -27,7 +27,7 @@ class Rabbit:
         #for the game
         self.hide_object = None
         self.alert = False
-        self.hidden = False
+        self.hidden = 0#because we have a timer when he unhide
         self.pregnant = False   
         self.player = False
 
@@ -49,6 +49,12 @@ class Rabbit:
                     self.each_rabbit.append(Rabbit(self.column, self.ligne, self.WIDTH, self.HEIGHT, rabbit.fastness, rabbit.color))
                     break
     #----------------------alerting & hiding
+    def alerted(rabbit):
+        #alerts a rabbit
+        if random.randint(0, rabbit.sensibility) < 100:#should be 2 or 3 in real game
+            rabbit.alert = True
+            rabbit.find_hide()
+            print("e")
     def alerts(self): 
         #alerts every rabbits around it    
         #check rabbits around
@@ -56,69 +62,65 @@ class Rabbit:
             if not rabbit.alert:
                 if abs(rabbit.column-self.column) < self.alerting_capabilities:
                     rabbit.alerted()
-        #check if sees an eagle
-        if random.randint(0, (int)(self.sensibility/len(Eagle.each_eagle))) > 20:
+        #check if sees an eagle (sometme false alert)
+        if random.randint(0, (int)(self.sensibility/(len(Eagle.each_eagle)+1))) > 20:
             self.alerted()
-    def alerted(rabbit):
-        #alerts a rabbit
-        if random.randint(0, rabbit.sensibility) < 2:
-            rabbit.alert = True
-            rabbit.new_target()
-    def unhide(self, object):
-        #hide or unhide the rabbit, affects also the hide's object
-        self.hidden = False
-        object.number_of_rabbit -=1
-    def hide(self, object):
-        self.hidden = True
-        object.number_of_rabbit +=1
-        self.orientation = 4
-        match object.__name__:
-            case "Bush":
-                self.relative_x = random.randint(0, Bush.WIDTH_BUSH)
-                self.relative_y = random.randint(0, Bush.HEIGHT_BUSH)
-            case "Whole":
-                self.relative_x = random.randint(0, Whole.WIDTH_WHOLE)
-                self.relative_y = random.randint(0, Whole.HEIGHT_WHOLE)   
-    def can_hide(object):
-        #find if it can hide
-        if object.number_of_rabbit < object.max_rabbit:
+    def find_hide(self):        
+        hide = self.closest_hide()
+        self.target_column = hide.column
+        self.target_ligne = hide.ligne
+        self.hide_object = hide
+        print(self.hide_object.number_of_rabbit)
+    def closest_hide(self):
+        total_distance = 100
+        total_hide = None
+        for hides in [Whole.each, Bush.each]:
+            for hide  in hides:
+                distance = abs(hide.column-self.column)+abs(hide.ligne-self.ligne)
+                #if equals to 0 it meens he is on the hide
+                #so if he is on a hide but he can't hide, the hide is full
+                if distance != 0 and total_distance > distance:
+                    total_distance = distance
+                    total_hide = hide
+        return total_hide
+    def can_hide(self):
+        #find closest hide where he can hide and return it
+        if self.hide_object.number_of_rabbit < self.hide_object.max_rabbit:
             return True
         else:
             return False
+    def hide(self):
+        if self.can_hide():
+            self.hidden = 1
+            self.hide_object.number_of_rabbit +=1
+            self.column =  self.hide_object.column
+            self.ligne =  self.hide_object.ligne
+            self.relative_x = random.randint(0, self.hide_object.WIDTH)
+            self.relative_y = random.randint(0, self.hide_object.HEIGHT)
+            self.orientation = self.hide_object.orientation
+        else:
+            self.hide_object = None
+            self.find_hide() 
+    def unhide(self):
+        #hide or unhide the rabbit, affects also the hide's object
+        self.hide_object.number_of_rabbit -=1
+        self.hide_object = None
+        self.alert = False
+        self.hidden = 0
     #----------------------end of alerting and hiding
     def new_eagle(self):
         if random.randint(0, 10) > 0:#0-> 9 //mofify just for debugging
             Eagle(self.COLUMN, self.LIGNE)
+        self.alerted()
+        if self.alert == True:
+            self.alerts()
     def new_target(self):
         #find new target or new hide or hide
         #maybefutur improvment find if there is the place befor going?
-        if self.alert == True :
-            #find closest hide
-            final_hide = []
-            availible_hides = [Whole.each_whole, Bush.each_bush]
-            for hides in self.availible_hides:
-                final_hide.append(self.closest_object(hides))
-            final_object = min(final_hide)[1]
-            self.target_column = final_object.column
-            self.target_ligne = final_object.ligne
-        else:
-            #set target
-            self.target_column = random.randint(0, self.COLUMN-1) 
-            self.target_ligne = random.randint(0, self.LIGNE-1)
-    def closest_object(self, object):
-        total_distance = 100
-        total_object = None
-        for object  in object.each_bush:
-            distance = abs(object.column-self.column)+abs(object.ligne-self.ligne)
-            #if equals to 0 it meens he is on the hide
-            #so if he is on a hide but he can't hide, the hide is full
-            if distance == 0 and self.can_hide():
-                self.hide(object)
-            elif total_distance > distance and distance != 0:
-                total_distance = distance
-                total_object = object
-        return [total_distance, total_object]
-    #---------------------start of direction block
+        #set target
+        self.target_column = random.randint(0, self.COLUMN-1) 
+        self.target_ligne = random.randint(0, self.LIGNE-1)
+    #---------------------start of positionnal block
     def direction(self):
         #finds the right direction and calls move_command
         #can also change target (if achieve)
@@ -136,8 +138,7 @@ class Rabbit:
         elif self.ligne != self.target_ligne:
             self.direction_ligne()
         else:
-            #we are arrived
-            print("error")
+            self.arrived()
     def direction_ligne(self):
         if self.ligne > self.target_ligne:
         #we are already certain the rabbit won't leave the screen for too lang
@@ -147,9 +148,28 @@ class Rabbit:
         elif self.column != self.target_column:
             self.direction_column()
         else:
-            #we are arrived
-            print("error")
-    #---------------------end of direction block
+            self.arrived()
+    def arrived(self):
+        #he is arrived at the target point so we have to possibilities:
+        #he stays hidden or hide
+        #he finds a new target
+        if self.alert == True :
+            self.hide()
+        else:
+            self.new_eagle()
+            self.new_target()
+    def collision(self, object):
+        #returns true if collision, false otherwise
+        if abs(self.column-object.column) <= 1 and abs(self.ligne-object.ligne) <= 1:
+            absolute_position_rabbit_x = self.relative_x+self.column*50
+            absolute_position_rabbit_y = self.relative_y+self.ligne*50
+            absolute_position_object_x = object.relative_x+object.column*50
+            absolute_position_object_y = object.relative_y+object.ligne*50
+            if abs(absolute_position_rabbit_x-absolute_position_object_x) < (int)(object.WIDTH/2) and abs(absolute_position_rabbit_y-absolute_position_object_y) < (int)(object.HEIGHT/2):
+                return True
+            else:
+                return False
+    #---------------------start of action
     def move(self, direction):
         #input any rabbit (even the player) with a table giving its position [true, false, false,false]
         #finds the new picture and the new position
@@ -191,15 +211,12 @@ class Rabbit:
                 self.relative_x = self.relative_x+1
             self.orientation = 3
     def reactions(self):
-        #else he is alerted and hidden so we have nothing to do
-        if self.hidden == True and self.alerted > 2000:
+        if self.hidden == 0:
+            self.direction()
+        elif self.hidden > 40:
             self.unhide()
-        elif self.hidden == False:
-            if self.column == self.target_column and self.ligne == self.target_ligne:
-                self.new_eagle()
-                self.new_target()
-            else:
-                self.direction()
+        else:
+            self.hidden+=1
     def actions(self):
         #input the player and the key array
         #calls the functions for the right action
@@ -209,7 +226,7 @@ class Rabbit:
             self.love()
         elif keys[pygame.K_h]:
             #print("alert")
-            self.hide()
+            self.alerts()
         elif keys[pygame.K_h]:
             #print("hide")
             self.hide()

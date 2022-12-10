@@ -1,8 +1,9 @@
 import random
 class Bush:
-    each_bush = []
+    each = []
     WIDTH = 0
     HEIGHT = 0
+    orientation = 4
     def __init__(self, column, ligne):
         self.ligne = ligne #y
         self.column = column #x
@@ -14,7 +15,7 @@ class Bush:
         self.relative_y = random.randint(0, 2*self.HEIGHT)-self.HEIGHT
         self.width = self.WIDTH
         self.height = self.HEIGHT
-        self.max = 3
+        self.max_rabbit = 3
 
         #directly linked to the one on top
         self.number_of_rabbit = 0

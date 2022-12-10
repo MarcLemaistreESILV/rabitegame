@@ -1,8 +1,9 @@
 import random
 class Whole:
-    each_whole =  []
+    each =  []
     WIDTH = 0
     HEIGHT = 0
+    orientation = 4
     def __init__(self, column, ligne):
         self.ligne = ligne#y
         self.column = column#x
@@ -13,7 +14,7 @@ class Whole:
         self.max_whole = 5
 
         #random value that will never be exceed because to big
-        self.max = 100
+        self.max_rabbit = 100
         self.number_of_rabbit = 0
         #directly linked to the one on top
         self.has_rabbit = False

@@ -68,13 +68,13 @@ class Eagle:
     def move(self):
         is_arrived = True
         if self.column != self.target_column:
-            self.relative_x +=self.column_increment*10
+            self.relative_x +=self.column_increment*1
             is_arrived = False
             if abs(self.WIDTH) < abs(self.relative_x):
                 self.column +=self.column_increment
                 self.relative_x=0
         if self.ligne != self.target_ligne:
-            self.relative_y += self.ligne_increment*10
+            self.relative_y += self.ligne_increment*1
             is_arrived = False
             if abs(self.HEIGHT) < abs(self.relative_y):
                 self.ligne +=self.ligne_increment
@@ -84,10 +84,14 @@ class Eagle:
     def kill_rabbit(self, rabbits):
         rabbits_killed = []
         for rabbit in rabbits:
-            if rabbit.column == self.column & rabbit.ligne == self.ligne:
-                #just so they really overlapp each other
-                if abs(rabbit.relative_x-self.relative_x)<20 & abs(rabbit.relative_y-self.relative_y)<20:
-                    if not rabbit.hidden:
+                #50 is the width and height of the grid
+                #at the end the grid is a loss of time
+                absolute_position_rabbit_x = rabbit.relative_x+rabbit.column*50
+                absolute_position_rabbit_y = rabbit.relative_y+rabbit.ligne*50
+                absolute_position_eagle_x = self.relative_x+self.column*50
+                absolute_position_eagle_y = self.relative_y+self.ligne*50
+                if abs(absolute_position_rabbit_x-absolute_position_eagle_x) < (int)(Eagle.WIDTH/2) and abs(absolute_position_rabbit_y-absolute_position_eagle_y) < (int)(Eagle.HEIGHT/2):
+                    if rabbit.hidden <= 0:
                         rabbits_killed.append(rabbit)
         return rabbits_killed
     def kill_eagle(self):

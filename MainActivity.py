@@ -3,6 +3,7 @@ import pygame
 from Whole import Whole 
 from Bush import Bush
 from Eagle import Eagle
+import sys
 import keyboard
 """ 
 normal rabbit class, posses:
@@ -72,9 +73,12 @@ def dimensions_init():
     Whole.HEIGHT = (int)(AVERGAE_SCREEN_SIZE/10)
 def initialization():
     #we initialize going form the most to the less restricted feature
-    rabbit_picture_files_names=['up.png', 'down.png', 'left.png', 'right.png', 'head.png']
-    rabbit_picture= load_images(Rabbit.WIDTH, Rabbit.HEIGHT, "rabbit/", rabbit_picture_files_names, ["blue/", "orange/"], ["up/", "down/"])
-    Rabbit.each_rabbit = initialize_each(Rabbit, Rabbit.WIDTH, Rabbit.HEIGHT, 2, 2, 0,3)
+
+    #for rabbit the width is not the same, so we have to load different sets of images
+    rabbit_picture_files_names_moving=['up.png', 'down.png', 'left.png', 'right.png']
+    rabbit_picture_file_name_extras = [["head.png", 50, 50], ["invisible.png", 0,0]]
+    rabbit_picture= load_images(Rabbit.WIDTH, Rabbit.HEIGHT, "rabbit/", rabbit_picture_files_names_moving, ["blue/", "orange/"], ["up/", "down/"], rabbit_picture_file_name_extras)
+    Rabbit.each_rabbit = initialize_each(Rabbit, Rabbit.WIDTH, Rabbit.HEIGHT, 4, 4, 0,3)
 
     #set the player special features
     Rabbit.each_rabbit[0].color = 0
@@ -82,13 +86,13 @@ def initialization():
     Rabbit.each_rabbit[0].column = 5
     Rabbit.each_rabbit[0].player = True
     bush_picture= load_image(Bush.WIDTH, Bush.HEIGHT, "bush/", 'bush_back.png')
-    Bush.each_bush = initialize_each(Bush, Bush.WIDTH, Bush.HEIGHT, NUMBER_OF_BUSH, NUMBER_OF_BUSH, 1, 1)
+    Bush.each = initialize_each(Bush, Bush.WIDTH, Bush.HEIGHT, NUMBER_OF_BUSH, NUMBER_OF_BUSH, 1, 1)
     whole_picture= load_image(Bush.WIDTH, Bush.HEIGHT, "whole/", 'terrier_1_b.png')
-    Whole.each_whole = initialize_each(Whole, Whole.WIDTH, Whole.HEIGHT, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, 1, 2)
+    Whole.each = initialize_each(Whole, Whole.WIDTH, Whole.HEIGHT, NUMBER_OF_WHOLE, NUMBER_OF_WHOLE, 1, 2)
     eagle_picture = load_image( Eagle.WIDTH, Eagle.HEIGHT, "eagle/", "eagle_flying.png")
     Eagle.each_eagle = []
     return rabbit_picture, bush_picture, whole_picture, eagle_picture
-def load_images(width, height, folder, file_names, colors=[""], postures=[""]):
+def load_images(width, height, folder, file_names, colors=[""], postures=[""], extras=[""]):
     pictures= []
     names = []
     for color in colors:
@@ -97,6 +101,10 @@ def load_images(width, height, folder, file_names, colors=[""], postures=[""]):
                 path = str('./src/images/'+folder+color+posture+file_name)
                 names.append(path)
                 pictures.append(pygame.transform.scale(pygame.image.load(path), (width, height)))        
+            for extra in extras:
+               path = str('./src/images/'+folder+color+posture+extra[0])
+               names.append(path)
+               pictures.append(pygame.transform.scale(pygame.image.load(path), (extra[1], extra[2])))                
     return pictures
 def load_image(width, height, folder, file_name):
     path = str('./src/images/'+folder+file_name)
@@ -121,8 +129,8 @@ def display_all(rabbit_picture, bush_picture, whole_picture, eagle_picture):
     #a bit tricky, only rabbit_picture is a list, the others are single surfaces
     display_background(SCREEN_SIZE_X, SCREEN_SIZE_Y)
     display_rabbit(Rabbit.each_rabbit, rabbit_picture)
-    display_object(Whole.each_whole, bush_picture)
-    display_object(Bush.each_bush, whole_picture)
+    display_object(Whole.each, bush_picture)
+    display_object(Bush.each, whole_picture)
     display_object(Eagle.each_eagle, eagle_picture)
 def display_rabbit(rabbits_list, picture):
     for rabbit in rabbits_list:
@@ -132,11 +140,11 @@ def display_rabbit(rabbits_list, picture):
             #2 state per orientation -> rabbit orientation*2
             #and then the state +rabbit.posture
             #o = orange / b = blue
-            #l =left / r=right / u = up / d= down
-            #example: [buu, bud, bul, bur, buh, bdu, bdd, bdl, bdr, bdh 
+            #l =left / r=right / u = up / d= down / h= hidden / i = invisible
+            #example: [buu, bud, bul, bur, buh, bdu, bdd, bdl, bdr, bdh, i
             #          ouu, obud, oul, our, odu, odd, odl, odr
             #          ...]
-            position = rabbit.color*10+rabbit.posture*5+rabbit.orientation
+            position = rabbit.color*12+rabbit.posture*6+rabbit.orientation
             surface = picture[position]
             screen.blit(surface, (x,y))
 def display_object(list, picture):
@@ -173,8 +181,7 @@ def eagle_operating():
         print("game over")
         pygame.display.quit
         pygame.QUIT
-        SystemExit 
-        print("end")
+        sys.exit() 
 def rabbit_operating():
     for rabbit in Rabbit.each_rabbit:
         if rabbit.player == False:
@@ -214,7 +221,6 @@ while running:
     display_all(rabbit_picture, bush_picture, whole_picture, eagle_picture)    
     pygame.display.flip()
     clock.tick(100)
-    
 
 pygame.quit()
 exit()
